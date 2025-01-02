@@ -39,6 +39,7 @@ import me.tomasan7.opinet.votes.VotesService
 import org.jetbrains.exposed.sql.Database
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.io.path.deleteIfExists
 
 class OpiNet : ConfigProvider, ScreenModel
 {
@@ -121,6 +122,12 @@ class OpiNet : ConfigProvider, ScreenModel
                 }
             }
         }
+    }
+
+    fun logout()
+    {
+        currentUser = null
+        config.sessionFile.deleteIfExists()
     }
 
     override fun getConfig() = config

@@ -1,11 +1,13 @@
 package me.tomasan7.opinet.config
 
 import com.sksamuel.hoplite.Masked
+import java.nio.file.Path
 
 data class Config(
     val database: Database,
     val import: Import,
-    val logLevel: String
+    val logLevel: String,
+    val sessionFile: Path
 )
 {
     data class Database(

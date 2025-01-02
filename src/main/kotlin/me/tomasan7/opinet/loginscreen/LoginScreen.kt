@@ -1,13 +1,18 @@
 package me.tomasan7.opinet.loginscreen
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -22,6 +27,7 @@ import me.tomasan7.opinet.registerscreen.RegisterScreen
 import me.tomasan7.opinet.ui.component.PasswordTextField
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
+import kotlin.io.path.Path
 
 object LoginScreen : Screen
 {
@@ -32,7 +38,7 @@ object LoginScreen : Screen
     {
         val navigator = LocalNavigator.currentOrThrow
         val opiNet = navigator.getOpiNet()
-        val model = rememberScreenModel { LoginScreenModel(opiNet.userService, opiNet) }
+        val model = rememberScreenModel { LoginScreenModel(opiNet.userService, opiNet, sessionFile = opiNet.getConfig().sessionFile) }
         val uiState = model.uiState
 
         if (uiState.loginSuccessEvent)
@@ -76,6 +82,10 @@ object LoginScreen : Screen
                     onDone = { model.login() }
                 )
             )
+            RememberMe(
+                checked = uiState.rememberMe,
+                onClick = { model.setRememberMe(!uiState.rememberMe) }
+            )
             Text(
                 text = uiState.errorText,
                 color = MaterialTheme.colorScheme.error
@@ -89,6 +99,28 @@ object LoginScreen : Screen
                     style = MaterialTheme.typography.labelMedium
                 )
             }
+        }
+    }
+
+    @Composable
+    private fun RememberMe(
+        checked: Boolean,
+        onClick: () -> Unit
+    )
+    {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable(onClick = onClick)
+                .requiredHeight(ButtonDefaults.MinHeight)
+        ) {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = null
+            )
+            Text("Remember me")
         }
     }
 }
