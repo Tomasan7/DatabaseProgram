@@ -1,34 +1,34 @@
 [versions]
 # Kotlin
-kotlin = "1.9.22"
-kotlinx-coroutines = "1.8.0"
-kotlinx-datetime = "0.5.0"
-kotlinx-collections-immutable = "0.3.7"
+kotlin = "2.1.0"
+kotlinx-coroutines = "1.10.1"
+kotlinx-datetime = "0.6.1"
+kotlinx-collections-immutable = "0.3.8"
 
 # UI
-compose = "1.6.0"
-voyager = "1.1.0-alpha03"
-human-readable = "1.7.0"
+compose = "1.7.3"
+voyager = "1.1.0-beta03"
+human-readable = "1.10.0"
 compose-filePicker = "3.1.0"
 
 # Database
-exposed = "0.47.0"
-h2 = "2.2.224"
-mssql-jdbc = "12.6.1.jre11"
+exposed = "0.57.0"
+h2 = "2.3.232"
+mssql-jdbc = "12.8.1.jre11"
 
 # Config
-hoplite = "2.8.0.RC3"
+hoplite = "2.9.0"
 
 # Logging
-slf4j = "2.0.12"
-logback = "1.5.0"
-kotlin-logging = "6.0.3"
+slf4j = "2.0.16"
+logback = "1.5.15"
+kotlin-logging = "7.0.3"
 
 # Crypto
 diglol-crypto = "0.2.0"
 
 # Parsing
-kotlinCsv = "1.9.3"
+kotlinCsv = "1.10.0"
 
 [libraries]
 # Kotlin
@@ -43,6 +43,7 @@ compose-previewer = { module = "com.github.alexfacciorusso:compose-previewer", v
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "human-readable" }
+# TODO: This library is not maintained anymore, can be replaced for example with https://github.com/vinceglb/FileKit
 compose-file-picker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "compose-filePicker" }
 
 # Database
@@ -66,10 +67,11 @@ diglolCrypto-kdf = { module = "com.diglol.crypto:kdf", version.ref = "diglol-cry
 diglolCrypto-hash = { module = "com.diglol.crypto:hash", version.ref = "diglol-crypto" }
 
 # Parsing
-kotlinCsv-jvm = { module = "com.github.doyaaaaaken:kotlin-csv-jvm", version.ref = "kotlinCsv" }
+kotlinCsv-jvm = { module = "com.jsoizo:kotlin-csv-jvm", version.ref = "kotlinCsv" }
 
 [bundles]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
