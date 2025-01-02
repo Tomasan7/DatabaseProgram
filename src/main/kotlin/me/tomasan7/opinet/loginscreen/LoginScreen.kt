@@ -56,7 +56,7 @@ object LoginScreen : Screen
                 singleLine = true,
                 onValueChange = { model.setUsername(it) },
                 keyboardOptions = KeyboardOptions(
-                    autoCorrect = false,
+                    autoCorrectEnabled = false,
                     imeAction = ImeAction.Next
                 ),
                 label = { Text("Username") }
@@ -69,7 +69,7 @@ object LoginScreen : Screen
                 label = { Text("Password") },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    autoCorrect = false,
+                    autoCorrectEnabled = false,
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(
