@@ -37,7 +37,7 @@ data class NewPostScreen(
         val model = rememberScreenModel { NewPostScreenModel(
             opiNet.postService,
             opiNet.userService,
-            opiNet.currentUser.toUser(),
+            opiNet.currentUser!!.toUser(),
             editingPost,
             opiNet.getConfig().import
         ) }

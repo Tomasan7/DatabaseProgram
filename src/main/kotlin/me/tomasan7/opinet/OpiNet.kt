@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory
 
 class OpiNet : ConfigProvider, ScreenModel
 {
-    lateinit var currentUser: UserDto
+    var currentUser: UserDto? = null
 
     private lateinit var configProvider: ConfigProvider
     private lateinit var config: Config
