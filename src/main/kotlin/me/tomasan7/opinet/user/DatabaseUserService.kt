@@ -48,6 +48,7 @@ class DatabaseUserService(
                     it[username] = userDto.username
                     it[firstName] = userDto.firstName
                     it[lastName] = userDto.lastName
+                    it[gender] = userDto.gender
                     it[this.password] = passwordHash
                 }.value
             }
