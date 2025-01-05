@@ -1,38 +1,33 @@
 package me.tomasan7.opinet.isolationlevels
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.Done
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachReversed
 import androidx.compose.ui.window.singleWindowApplication
+import cafe.adriel.voyager.navigator.tab.CurrentTab
+import cafe.adriel.voyager.navigator.tab.TabNavigator
 import me.tomasan7.opinet.config.FileConfigProvider
+import me.tomasan7.opinet.config.IsolationLevel
+import me.tomasan7.opinet.ui.component.FilledDropDownSelector
 import me.tomasan7.opinet.ui.theme.AppTheme
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class IsolationLevels(private val isolationLevel: Int)
+class IsolationLevels
 {
-    private val config = FileConfigProvider("opinet.conf").getConfig()
-    private val accountName = "Bob"
-    private val database = config.database.let { dbConf ->
+    val config = FileConfigProvider("opinet.conf").getConfig()
+    val accountName = "Bob"
+    val database = config.database.let { dbConf ->
         Database.connect(
             url = dbConf.url,
             driver = dbConf.driver,
@@ -40,138 +35,76 @@ class IsolationLevels(private val isolationLevel: Int)
             password = dbConf.password.value,
         )
     }
+    private val dirtyReadsTab = DirtyReadsTab(accountName)
+    private val dirtyWritesTab = DirtyWritesTab(accountName)
+
+    private var _isolationLevel = mutableStateOf(config.isolationLevel)
+    var isolationLevel: IsolationLevel
+        get() = _isolationLevel.value
+        set(value) {
+            TransactionManager.manager.defaultIsolationLevel = value.id
+            _isolationLevel.value = value
+        }
 
     init
     {
-        transaction(database) {
+        isolationLevel = config.isolationLevel
+        TransactionManager.defaultDatabase = database
+        transaction {
             SchemaUtils.drop(AccountTable)
             SchemaUtils.create(AccountTable)
-            transaction(database) {
-                AccountTable.insert {
-                    it[name] = accountName
-                    it[balance] = 100f
-                }
+            AccountTable.insert {
+                it[name] = accountName
+                it[balance] = 100f
             }
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     fun start() = singleWindowApplication(
         title = "IsolationLevels"
     ) {
         AppTheme {
-            val model = remember { DirtyReadsModel(database, isolationLevel, accountName) }
-            val uiState = model.uiState
-
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+            TabNavigator(DirtyReadsTab(accountName)) { navigator ->
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
                 ) {
                     Column {
-                        Text(
-                            text = "Write transaction",
-                            style = MaterialTheme.typography.headlineMedium
+                        FilledDropDownSelector(
+                            label = "Isolation level",
+                            items = IsolationLevel.entries,
+                            selectedItem = isolationLevel,
+                            onChange = { isolationLevel = it },
+                            modifier = Modifier.padding(16.dp)
                         )
-                        TransactionInProgress(uiState.writeTransactionInProgress)
-                        Button(
-                            enabled = !uiState.writeTransactionInProgress,
-                            onClick = { model.startWriteTransaction() }
-                        ) {
-                            Text("Start write transaction")
-                        }
-                        Row {
-                            TextField(
-                                value = uiState.balanceAddition.toString(),
-                                singleLine = true,
-                                label = { Text("Update value") },
-                                onValueChange = { model.setBalanceAddition(it) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier
-                                    .width(150.dp)
-                                    .onKeyEvent { event ->
-                                        if (event.key == Key.Enter)
-                                        {
-                                            model.writeBalance()
-                                            true
-                                        }
 
-                                        false
-                                    }
+                        SecondaryTabRow(
+                            selectedTabIndex = navigator.current.options.index.toInt()
+                        ) {
+                            Tab(
+                                selected = navigator.current == dirtyReadsTab,
+                                onClick = { navigator.current = dirtyReadsTab },
+                                text = { Text("Dirty reads") }
                             )
-                            Button(
-                                enabled = uiState.writeTransactionInProgress,
-                                onClick = { model.writeBalance() }
-                            ) {
-                                Text("Write")
-                            }
+                            Tab(
+                                selected = navigator.current == dirtyWritesTab,
+                                onClick = { navigator.current = dirtyWritesTab },
+                                text = { Text("Dirty writes") }
+                            )
                         }
-                        Row {
-                            Button(
-                                enabled = uiState.writeTransactionInProgress,
-                                onClick = { model.commitWrite() }
-                            ) {
-                                Icon(Icons.Default.Done, contentDescription = "Commit")
-                                Text("Commit")
-                            }
-                            Button(
-                                enabled = uiState.writeTransactionInProgress,
-                                onClick = { model.rollbackWrite() }
-                            ) {
-                                Icon(Icons.AutoMirrored.Default.Undo, contentDescription = "Rollback")
-                                Text("Rollback")
-                            }
-                        }
-                    }
 
-                    Column {
-                        Text(
-                            text = "Read transaction",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        TransactionInProgress(uiState.readTransactionInProgress)
-                        Text("Balance: ${uiState.readBalance}")
-                        Button(
-                            onClick = { model.readBalance() }
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
                         ) {
-                            Text("Read")
+                            CurrentTab()
                         }
                     }
                 }
-                Column(
-                    modifier = Modifier
-                        .height(200.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        text = "Action history:",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    uiState.actionHistory.fastForEachReversed {
-                        Text("- $it")
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun TransactionInProgress(inProgress: Boolean)
-    {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("Transaction in progress:")
-            Canvas(Modifier.size(10.dp)) {
-                drawCircle(
-                    color = if (inProgress) Color.Green else Color.Red
-                )
             }
         }
     }

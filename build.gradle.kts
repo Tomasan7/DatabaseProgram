@@ -42,6 +42,7 @@ dependencies {
     implementation(compose.materialIconsExtended)
     implementation(libs.compose.previewer)
     implementation(libs.voyager.navigator)
+    implementation(libs.voyager.tab.navigator)
     implementation(libs.voyager.screenModel)
     //implementation(libs.humanReadable)
     implementation(libs.compose.file.picker)

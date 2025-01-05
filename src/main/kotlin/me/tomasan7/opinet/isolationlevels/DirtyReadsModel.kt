@@ -3,8 +3,8 @@ package me.tomasan7.opinet.isolationlevels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import cafe.adriel.voyager.core.model.ScreenModel
 import kotlinx.coroutines.*
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.update
@@ -12,10 +12,8 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 
 class DirtyReadsModel(
-    private val database: Database,
-    private val isolationLevel: Int,
     private val accountName: String
-)
+): ScreenModel
 {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private var writeTransactionContinuation: Continuation<WriteTransactionAction<Float>>? = null
@@ -33,7 +31,7 @@ class DirtyReadsModel(
     {
         uiState = uiState.copy(writeTransactionInProgress = true, actionHistory = uiState.actionHistory + "Write transaction started")
         coroutineScope.launch(Dispatchers.IO) {
-            newSuspendedTransaction(db = database, transactionIsolation = isolationLevel) {
+            newSuspendedTransaction {
                 var action = suspend()
                 while (true)
                 {
@@ -71,7 +69,7 @@ class DirtyReadsModel(
         uiState = uiState.copy(readTransactionInProgress = true)
         coroutineScope.launch {
             val balance = withContext(Dispatchers.IO) {
-                newSuspendedTransaction(db = database, transactionIsolation = isolationLevel) {
+                newSuspendedTransaction {
                     AccountTable.selectAll().where { AccountTable.name eq accountName }.single()[AccountTable.balance]
                 }
             }

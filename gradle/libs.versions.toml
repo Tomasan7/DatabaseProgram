@@ -42,6 +42,7 @@ kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collec
 # UI
 compose-previewer = { module = "com.github.alexfacciorusso:compose-previewer", version = "996d4ed455" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+voyager-tab-navigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
 voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "human-readable" }
 # TODO: This library is not maintained anymore, can be replaced for example with https://github.com/vinceglb/FileKit
