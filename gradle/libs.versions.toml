@@ -10,6 +10,7 @@ compose = "1.7.3"
 voyager = "1.1.0-beta03"
 human-readable = "1.10.0"
 compose-filePicker = "3.1.0"
+compose-stacked-snackbar = "1.0.4"
 
 # Database
 exposed = "0.57.0"
@@ -45,6 +46,7 @@ voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", vers
 humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "human-readable" }
 # TODO: This library is not maintained anymore, can be replaced for example with https://github.com/vinceglb/FileKit
 compose-file-picker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "compose-filePicker" }
+compose-stacked-snackbar = { module = "io.github.rizmaulana:compose-stacked-snackbar", version.ref = "compose-stacked-snackbar" }
 
 # Database
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }

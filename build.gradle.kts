@@ -45,7 +45,7 @@ dependencies {
     implementation(libs.voyager.screenModel)
     //implementation(libs.humanReadable)
     implementation(libs.compose.file.picker)
-
+    implementation(libs.compose.stacked.snackbar)
     //implementation(libs.diglolCrypto.kdf)
     implementation(libs.diglolCrypto.hash)
 
@@ -55,7 +55,6 @@ dependencies {
 kotlin {
     jvmToolchain(17)
 }
-
 compose.desktop {
     application {
         mainClass = "me.tomasan7.opinet.MainKt"
