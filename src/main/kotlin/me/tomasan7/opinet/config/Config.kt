@@ -7,7 +7,8 @@ data class Config(
     val database: Database,
     val import: Import,
     val logLevel: String,
-    val sessionFile: Path
+    val sessionFile: Path,
+    val isolationLevel: IsolationLevel
 )
 {
     data class Database(
@@ -21,4 +22,12 @@ data class Config(
         val csvDelimiter: Char,
         val dateFormat: String
     )
+}
+
+enum class IsolationLevel(val id: Int)
+{
+    READ_UNCOMMITTED(1),
+    READ_COMMITTED(2),
+    REPEATABLE_READ(4),
+    SERIALIZABLE(8)
 }
