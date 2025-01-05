@@ -1,13 +1,21 @@
 package me.tomasan7.opinet.registerscreen
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
@@ -20,6 +28,7 @@ import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.loginscreen.LoginScreen
 import me.tomasan7.opinet.ui.component.PasswordTextField
 import me.tomasan7.opinet.ui.component.VerticalSpacer
+import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.util.AppThemePreviewer
 
 
@@ -85,6 +94,39 @@ data class RegisterScreen(
                 onValueChange = { model.setLastName(it) },
                 label = { Text("Last name") }
             )
+
+            var genderMenuExpanded by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = genderMenuExpanded,
+                onExpandedChange = { genderMenuExpanded = it }
+            ) {
+                TextField(
+                    value = uiState.gender.toString(),
+                    singleLine = true,
+                    readOnly = true,
+                    onValueChange = {},
+                    label = { Text("gender") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(genderMenuExpanded) },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                )
+                ExposedDropdownMenu(
+                    expanded = genderMenuExpanded,
+                    onDismissRequest = { genderMenuExpanded = false }
+                ) {
+                    Gender.entries.forEach { gender ->
+                        DropdownMenuItem(
+                            text = { Text(gender.toString()) },
+                            onClick = {
+                                model.setGender(gender)
+                                genderMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             PasswordTextField(
                 password = uiState.password,
                 onPasswordChange = { model.setPassword(it) },

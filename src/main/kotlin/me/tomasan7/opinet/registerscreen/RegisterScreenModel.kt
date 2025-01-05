@@ -10,6 +10,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
 import me.tomasan7.opinet.OpiNet
 import me.tomasan7.opinet.config.Config
+import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.user.UsernameAlreadyExistsException
@@ -42,6 +43,8 @@ class RegisterScreenModel(
 
     fun changeConfirmingPasswordVisibility() = changeUiState(confirmingPasswordShown = !uiState.confirmingPasswordShown)
 
+    fun setGender(gender: Gender) = changeUiState(gender = gender)
+
     fun registrationSuccessEventConsumed() = changeUiState(registrationSuccessEvent = false, errorText = "")
 
     fun onImportClick()
@@ -56,18 +59,19 @@ class RegisterScreenModel(
                 delimiter = importConfig.csvDelimiter
             }.openAsync(path) {
                 readAllAsSequence().forEach { fields ->
-                    if (fields.size != 4)
+                    if (fields.size != 5)
                     {
                         logger.warn { "IMPORT: Skipped line because it had ${fields.size} fields instead of 3" }
                         return@forEach
                     }
 
-                    val (username, firstName, lastName, password) = fields
+                    val (username, firstName, lastName, password, genderStr) = fields
 
                     val userDto = UserDto(
                         username = username,
                         firstName = firstName,
-                        lastName = lastName
+                        lastName = lastName,
+                        gender = Gender.valueOf(genderStr)
                     )
                     try
                     {
@@ -114,7 +118,8 @@ class RegisterScreenModel(
         val userDto = UserDto(
             username = uiState.username,
             firstName = uiState.firstName,
-            lastName = uiState.lastName
+            lastName = uiState.lastName,
+            gender = uiState.gender
         )
         val password = uiState.password
 
@@ -150,6 +155,7 @@ class RegisterScreenModel(
         confirmingPassword: String = uiState.confirmingPassword,
         passwordShown: Boolean = uiState.passwordShown,
         confirmingPasswordShown: Boolean = uiState.confirmingPasswordShown,
+        gender: Gender = uiState.gender,
         errorText: String = uiState.errorText,
         registrationSuccessEvent: Boolean = uiState.registrationSuccessEvent,
         filePickerOpen: Boolean = uiState.filePickerOpen
@@ -163,11 +169,11 @@ class RegisterScreenModel(
             confirmingPassword = confirmingPassword,
             passwordShown = passwordShown,
             confirmingPasswordShown = confirmingPasswordShown,
+            gender = gender,
             errorText = errorText,
             registrationSuccessEvent = registrationSuccessEvent,
             filePickerOpen = filePickerOpen
         )
     }
-
     private fun String.removeWhitespace() = this.replace(Regex("\\s"), "")
 }

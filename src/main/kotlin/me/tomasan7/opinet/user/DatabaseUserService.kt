@@ -30,6 +30,7 @@ class DatabaseUserService(
         username = this[UserTable.username],
         firstName = this[UserTable.firstName],
         lastName = this[UserTable.lastName],
+        gender = this[UserTable.gender],
         id = this[UserTable.id].value
     )
 
