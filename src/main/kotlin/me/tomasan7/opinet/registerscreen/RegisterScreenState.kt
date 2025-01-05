@@ -12,6 +12,5 @@ data class RegisterScreenState(
     val confirmingPasswordShown: Boolean = false,
     val gender: Gender = Gender.MALE,
     val errorText: String = "",
-    val registrationSuccessEvent: Boolean = false,
-    val filePickerOpen: Boolean = false
+    val registrationSuccessEvent: Boolean = false
 )

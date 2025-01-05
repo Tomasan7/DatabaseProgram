@@ -46,7 +46,8 @@ dependencies {
     implementation(libs.voyager.screenModel)
     //implementation(libs.humanReadable)
     implementation(libs.compose.file.picker)
-    implementation(libs.compose.stacked.snackbar)
+    implementation(libs.filekit.core)
+    implementation(libs.filekit.compose)
     //implementation(libs.diglolCrypto.kdf)
     implementation(libs.diglolCrypto.hash)
 

@@ -22,8 +22,7 @@ class RegisterScreenModel(
     username: String = "",
     password: String = "",
     private val userService: UserService,
-    private val opiNet: OpiNet,
-    private val importConfig: Config.Import
+    private val opiNet: OpiNet
 ) : ScreenModel
 {
     var uiState by mutableStateOf(RegisterScreenState(username = username, password = password))
@@ -46,55 +45,6 @@ class RegisterScreenModel(
     fun setGender(gender: Gender) = changeUiState(gender = gender)
 
     fun registrationSuccessEventConsumed() = changeUiState(registrationSuccessEvent = false, errorText = "")
-
-    fun onImportClick()
-    {
-        changeUiState(filePickerOpen = true)
-    }
-
-    fun onImportFileChosen(path: String)
-    {
-        screenModelScope.launch {
-            csvReader {
-                delimiter = importConfig.csvDelimiter
-            }.openAsync(path) {
-                readAllAsSequence().forEach { fields ->
-                    if (fields.size != 5)
-                    {
-                        logger.warn { "IMPORT: Skipped line because it had ${fields.size} fields instead of 3" }
-                        return@forEach
-                    }
-
-                    val (username, firstName, lastName, password, genderStr) = fields
-
-                    val userDto = UserDto(
-                        username = username,
-                        firstName = firstName,
-                        lastName = lastName,
-                        gender = Gender.valueOf(genderStr)
-                    )
-                    try
-                    {
-                        userService.createUser(userDto, password)
-                        logger.info { "IMPORT: Imported $username - $firstName $lastName" }
-                    }
-                    catch (e: UsernameAlreadyExistsException)
-                    {
-                        logger.info { "IMPORT: $username - $firstName $lastName was not imported, because it already exists" }
-                    }
-                    catch (e: Exception)
-                    {
-                        logger.error { "IMPORT: $username - $firstName $lastName was not imported. (${e.message})" }
-                    }
-                }
-            }
-        }
-    }
-
-    fun closeImportFilePicker()
-    {
-        changeUiState(filePickerOpen = false)
-    }
 
     fun register()
     {
@@ -158,7 +108,6 @@ class RegisterScreenModel(
         gender: Gender = uiState.gender,
         errorText: String = uiState.errorText,
         registrationSuccessEvent: Boolean = uiState.registrationSuccessEvent,
-        filePickerOpen: Boolean = uiState.filePickerOpen
     )
     {
         uiState = uiState.copy(
@@ -172,7 +121,6 @@ class RegisterScreenModel(
             gender = gender,
             errorText = errorText,
             registrationSuccessEvent = registrationSuccessEvent,
-            filePickerOpen = filePickerOpen
         )
     }
     private fun String.removeWhitespace() = this.replace(Regex("\\s"), "")

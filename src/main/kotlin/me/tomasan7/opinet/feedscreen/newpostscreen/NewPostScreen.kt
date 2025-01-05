@@ -4,7 +4,6 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,7 +14,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alexfacciorusso.previewer.PreviewTheme
-import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import me.tomasan7.opinet.feedscreen.Post
 import me.tomasan7.opinet.feedscreen.toUser
 import me.tomasan7.opinet.getOpiNet
@@ -36,10 +34,8 @@ data class NewPostScreen(
         val opiNet = navigator.getOpiNet()
         val model = rememberScreenModel { NewPostScreenModel(
             opiNet.postService,
-            opiNet.userService,
             opiNet.currentUser!!.toUser(),
-            editingPost,
-            opiNet.getConfig().import
+            editingPost
         ) }
         val uiState = model.uiState
 
@@ -47,13 +43,6 @@ data class NewPostScreen(
         {
             model.goBackToFeedEventConsumed()
             navigator.pop()
-        }
-
-        FilePicker(uiState.filePickerOpen, fileExtensions = listOf("csv")) { mpFile ->
-            if (mpFile == null)
-                model.closeImportFilePicker()
-            else
-                model.onImportFileChosen(mpFile.path)
         }
 
         Column(
@@ -97,23 +86,6 @@ data class NewPostScreen(
             )
             Button({ model.submit() }) {
                 Text(if (!uiState.isEditing) "Submit" else "Save")
-            }
-            TooltipBox(
-                tooltip = {
-                    PlainTooltip {
-                        Text("Import posts from CSV file")
-                    }
-                },
-                state = rememberTooltipState(),
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider()
-            ) {
-                IconButton({ model.onImportClick() }) {
-                    Icon(
-                        imageVector = Icons.Default.Download,
-                        contentDescription = "Import posts",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
             }
         }
     }
