@@ -17,6 +17,7 @@ import com.alexfacciorusso.previewer.PreviewTheme
 import me.tomasan7.opinet.feedscreen.Post
 import me.tomasan7.opinet.feedscreen.toUser
 import me.tomasan7.opinet.getOpiNet
+import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
 
 data class NewPostScreen(
@@ -48,26 +49,27 @@ data class NewPostScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .width(250.dp)
+                .width(300.dp)
         ) {
-            IconButton(
-                onClick = { navigator.pop() },
-                modifier = Modifier.align(Alignment.Start)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    contentDescription = "Back",
+                IconButton(
+                    onClick = { navigator.pop() }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                        tint = MaterialTheme.colorScheme.onBackground,
+                        contentDescription = "Back",
+                    )
+                }
+                Text(
+                    text = if (!uiState.isEditing) "Create new post" else "Edit post",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.headlineMedium
                 )
             }
-            Text(
-                text = if (!uiState.isEditing) "Create new post" else "Edit post",
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+            VerticalSpacer(16.dp)
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = { model.setTitle(it) },

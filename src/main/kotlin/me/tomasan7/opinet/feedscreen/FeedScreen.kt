@@ -72,66 +72,66 @@ object FeedScreen : Screen
             navigator push NewPostScreen(editingPost = uiState.editPostEvent)
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Posts feed",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier
-                            .padding(bottom = 16.dp)
-                            .align(Alignment.Center)
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                    ) {
-                        LoggedUser(
-                            user = currentUser,
-                            onLogout = {
-                                opiNet.logout()
-                                navigator.popUntil { it is LoginScreen }
-                            }
-                        )
-                    }
-                }
-
-                uiState.posts.forEach { post ->
-                    key(post.id) {
-                        Post(
-                            post = post,
-                            owned = opiNet.currentUser!!.id == post.author.id,
-                            onEditClick = { model.editPost(post) },
-                            onDeleteClick = { model.deletePost(post) },
-                            onVote = { model.voteOnPost(post, it) },
-                            onCommentClick = { model.openComments(post.id) }
-                        )
-                    }
-                }
-            }
-            VerticalSpacer(16.dp)
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
+        Scaffold(
+            floatingActionButton = {
                 FloatingActionButton({ navigator push NewPostScreen() }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+                }
+            }
+        ) { contentPadding ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(contentPadding)
+                    .fillMaxSize()
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Posts feed",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier
+                                .padding(bottom = 16.dp)
+                                .align(Alignment.Center)
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                        ) {
+                            LoggedUser(
+                                user = currentUser,
+                                onLogout = {
+                                    opiNet.logout()
+                                    navigator.popUntil { it is LoginScreen }
+                                }
+                            )
+                        }
+                    }
+
+                    uiState.posts.forEach { post ->
+                        key(post.id) {
+                            Post(
+                                post = post,
+                                owned = opiNet.currentUser!!.id == post.author.id,
+                                onEditClick = { model.editPost(post) },
+                                onDeleteClick = { model.deletePost(post) },
+                                onVote = { model.voteOnPost(post, it) },
+                                onCommentClick = { model.openComments(post.id) }
+                            )
+                        }
+                    }
+                    VerticalSpacer(100.dp)
                 }
             }
         }
