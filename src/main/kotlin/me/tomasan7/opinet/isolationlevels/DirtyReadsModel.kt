@@ -84,7 +84,7 @@ class DirtyReadsModel(
                 uiState.balanceAddition.toFloatOrNull() ?: 0f
             )
         )
-        uiState = uiState.copy(actionHistory = uiState.actionHistory + "Written balance: ${uiState.balanceAddition}")
+        uiState = uiState.copy(actionHistory = uiState.actionHistory + "Write balance: ${uiState.balanceAddition}")
     }
 
     fun commitWrite()
