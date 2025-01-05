@@ -81,10 +81,10 @@ class DirtyReadsModel(
     {
         writeTransactionContinuation?.resume(
             WriteTransactionAction.Write(
-                uiState.balanceAddition.toFloatOrNull() ?: 0f
+                uiState.updateValue.toFloatOrNull() ?: 0f
             )
         )
-        uiState = uiState.copy(actionHistory = uiState.actionHistory + "Write balance: ${uiState.balanceAddition}")
+        uiState = uiState.copy(actionHistory = uiState.actionHistory + "Write balance: ${uiState.updateValue}")
     }
 
     fun commitWrite()
@@ -103,15 +103,9 @@ class DirtyReadsModel(
         writeTransactionContinuation = it
     }
 
-    fun setBalanceAddition(value: String)
+    fun setUpdateValue(value: String)
     {
-        uiState = uiState.copy(balanceAddition = value)
+        uiState = uiState.copy(updateValue = value)
     }
 }
 
-private sealed interface WriteTransactionAction<T>
-{
-    data class Write<T>(val value: T) : WriteTransactionAction<T>
-    class Commit<T>() : WriteTransactionAction<T>
-    class Rollback<T>() : WriteTransactionAction<T>
-}
