@@ -3,6 +3,7 @@ package me.tomasan7.opinet.isolationlevels
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -14,9 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
@@ -75,18 +74,12 @@ class DirtyReadsTab(
                                 singleLine = true,
                                 label = { Text("Update value") },
                                 onValueChange = { model.setBalanceAddition(it) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Send),
+                                keyboardActions = KeyboardActions(
+                                    onSend = { model.writeBalance() }
+                                ),
                                 modifier = Modifier
                                     .width(150.dp)
-                                    .onKeyEvent { event ->
-                                        if (event.key == Key.Enter)
-                                        {
-                                            model.writeBalance()
-                                            true
-                                        }
-
-                                        false
-                                    }
                             )
                             Button(
                                 onClick = { model.writeBalance() }
@@ -96,16 +89,16 @@ class DirtyReadsTab(
                         }
                         Row {
                             Button(
+                                onClick = { model.rollbackWrite() },
+                            ) {
+                                Icon(Icons.AutoMirrored.Default.Undo, contentDescription = "Rollback")
+                                Text("Rollback")
+                            }
+                            Button(
                                 onClick = { model.commitWrite() }
                             ) {
                                 Icon(Icons.Default.Done, contentDescription = "Commit")
                                 Text("Commit")
-                            }
-                            Button(
-                                onClick = { model.rollbackWrite() }
-                            ) {
-                                Icon(Icons.AutoMirrored.Default.Undo, contentDescription = "Rollback")
-                                Text("Rollback")
                             }
                         }
                     }
