@@ -16,6 +16,8 @@ import com.alexfacciorusso.previewer.PreviewTheme
 import me.tomasan7.opinet.feedscreen.FeedScreen
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.loginscreen.LoginScreen
+import me.tomasan7.opinet.ui.component.DropDownSelector
+import me.tomasan7.opinet.ui.component.FilledDropDownSelector
 import me.tomasan7.opinet.ui.component.PasswordTextField
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.user.Gender
@@ -77,37 +79,12 @@ data class RegisterScreen(
                 label = { Text("Last name") }
             )
 
-            var genderMenuExpanded by remember { mutableStateOf(false) }
-
-            ExposedDropdownMenuBox(
-                expanded = genderMenuExpanded,
-                onExpandedChange = { genderMenuExpanded = it }
-            ) {
-                TextField(
-                    value = uiState.gender.toString(),
-                    singleLine = true,
-                    readOnly = true,
-                    onValueChange = {},
-                    label = { Text("gender") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(genderMenuExpanded) },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                )
-                ExposedDropdownMenu(
-                    expanded = genderMenuExpanded,
-                    onDismissRequest = { genderMenuExpanded = false }
-                ) {
-                    Gender.entries.forEach { gender ->
-                        DropdownMenuItem(
-                            text = { Text(gender.toString()) },
-                            onClick = {
-                                model.setGender(gender)
-                                genderMenuExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
+            FilledDropDownSelector(
+                items = Gender.entries,
+                selectedItem = uiState.gender,
+                itemStringMap = { it.toString().replace("_", "-").lowercase().replaceFirstChar { it.uppercase() } },
+                onChange = { model.setGender(it) }
+            )
 
             PasswordTextField(
                 password = uiState.password,
