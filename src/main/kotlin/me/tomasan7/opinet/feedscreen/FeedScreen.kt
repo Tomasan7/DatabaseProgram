@@ -84,6 +84,7 @@ object FeedScreen : Screen
                 verticalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .padding(contentPadding)
+                    .padding(horizontal = 32.dp)
                     .fillMaxSize()
             ) {
                 Column(
