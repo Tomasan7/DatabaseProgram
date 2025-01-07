@@ -4,21 +4,15 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.datetime.Instant
+import me.tomasan7.opinet.service.DatabaseService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class DatabaseVoteService(
-    private val database: Database
-) : VoteService
+    database: Database
+) : VoteService, DatabaseService(database, VoteTable)
 {
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) =
-        newSuspendedTransaction(Dispatchers.IO, database, statement = statement)
-
-    suspend fun init() = dbQuery {
-        SchemaUtils.create(VoteTable)
-    }
-
     private fun ResultRow.toVoteDto() = VoteDto(
         upDown = this[VoteTable.upDown],
         votedAt = Instant.fromEpochSeconds(this[VoteTable.votedAt].toLong()),

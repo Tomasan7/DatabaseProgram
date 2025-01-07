@@ -1,26 +1,18 @@
 package me.tomasan7.opinet.post
 
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.Dispatchers
 import me.tomasan7.opinet.comment.CommentService
+import me.tomasan7.opinet.service.DatabaseService
 import me.tomasan7.opinet.vote.VoteService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class DatabasePostService(
-    private val database: Database,
+    database: Database,
     private val commentService: CommentService,
     private val voteService: VoteService
-) : PostService
+) : PostService, DatabaseService(database, PostTable)
 {
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) =
-        newSuspendedTransaction(Dispatchers.IO, database, statement = statement)
-
-    suspend fun init() = dbQuery {
-        SchemaUtils.create(PostTable)
-    }
-
     override suspend fun createPost(postDto: PostDto): Int
     {
         if (postDto.id != null)

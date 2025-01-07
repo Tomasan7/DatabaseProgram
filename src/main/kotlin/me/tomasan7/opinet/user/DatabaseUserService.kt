@@ -1,25 +1,17 @@
 package me.tomasan7.opinet.user
 
 import diglol.crypto.Hash
-import kotlinx.coroutines.Dispatchers
+import me.tomasan7.opinet.service.DatabaseService
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.sql.SQLIntegrityConstraintViolationException
 
 class DatabaseUserService(
-    private val database: Database
-) : UserService
+    database: Database
+) : UserService, DatabaseService(database, UserTable)
 {
     /* TODO: Replace with Argon2 */
     private val sha256 = Hash(Hash.Type.SHA256)
-
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) =
-        newSuspendedTransaction(Dispatchers.IO, database, statement = statement)
-
-    suspend fun init() = dbQuery {
-        SchemaUtils.create(UserTable)
-    }
 
     private fun ResultRow.toUser() = UserDto(
         username = this[UserTable.username],
