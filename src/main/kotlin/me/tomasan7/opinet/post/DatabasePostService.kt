@@ -21,14 +21,6 @@ class DatabasePostService(
         SchemaUtils.create(PostTable)
     }
 
-    private fun ResultRow.toPostDto() = PostDto(
-        title = this[PostTable.title],
-        content = this[PostTable.content],
-        authorId = this[PostTable.authorId].value,
-        uploadDate = this[PostTable.uploadDate],
-        id = this[PostTable.id].value
-    )
-
     override suspend fun createPost(postDto: PostDto): Int
     {
         if (postDto.id != null)
