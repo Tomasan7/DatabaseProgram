@@ -2,28 +2,23 @@ package me.tomasan7.opinet.post
 
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.tomasan7.opinet.comment.CommentService
-import me.tomasan7.opinet.votes.VotesService
+import me.tomasan7.opinet.vote.VoteService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class DatabasePostService(
     private val database: Database,
     private val commentService: CommentService,
-    private val votesService: VotesService
+    private val voteService: VoteService
 ) : PostService
 {
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) = withContext(Dispatchers.IO) {
-        transaction(database, statement = statement)
-    }
+    private suspend fun <T> dbQuery(statement: Transaction.() -> T) =
+        newSuspendedTransaction(Dispatchers.IO, database, statement = statement)
 
-    suspend fun init()
-    {
-        dbQuery {
-            SchemaUtils.create(PostTable)
-        }
+    suspend fun init() = dbQuery {
+        SchemaUtils.create(PostTable)
     }
 
     private fun ResultRow.toPostDto() = PostDto(
@@ -88,7 +83,7 @@ class DatabasePostService(
     override suspend fun deletePost(id: Int): Boolean
     {
         commentService.deleteCommentsForPost(id)
-        votesService.deleteVotesForPost(id)
+        voteService.deleteVotesForPost(id)
 
         return dbQuery {
             PostTable.deleteWhere { PostTable.id eq id } > 0

@@ -5,21 +5,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class DatabaseCommentService(
     private val database: Database
 ) : CommentService
 {
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) = withContext(Dispatchers.IO) {
-        transaction(database, statement = statement)
-    }
+    private suspend fun <T> dbQuery(statement: Transaction.() -> T) =
+        newSuspendedTransaction(Dispatchers.IO, database, statement = statement)
 
-    suspend fun init()
-    {
-        dbQuery {
-            SchemaUtils.create(CommentTable)
-        }
+    suspend fun init() = dbQuery {
+        SchemaUtils.create(CommentTable)
     }
 
     private fun ResultRow.toCommentDto() = CommentDto(
@@ -47,7 +44,7 @@ class DatabaseCommentService(
 
     override suspend fun getCommentById(id: Int) = dbQuery {
         CommentTable.selectAll()
-            .where{ CommentTable.id eq id }
+            .where { CommentTable.id eq id }
             .singleOrNull()
             ?.toCommentDto()
     }
