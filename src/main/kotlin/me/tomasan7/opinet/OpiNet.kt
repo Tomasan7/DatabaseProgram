@@ -10,13 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowSize
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
 import androidx.compose.ui.window.singleWindowApplication
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberNavigatorScreenModel
@@ -36,8 +32,8 @@ import me.tomasan7.opinet.ui.theme.AppTheme
 import me.tomasan7.opinet.user.DatabaseUserService
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
-import me.tomasan7.opinet.votes.DatabaseVotesService
-import me.tomasan7.opinet.votes.VotesService
+import me.tomasan7.opinet.vote.DatabaseVoteService
+import me.tomasan7.opinet.vote.VoteService
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.slf4j.Logger
@@ -57,7 +53,7 @@ class OpiNet : ConfigProvider, ScreenModel
         private set
     lateinit var commentService: CommentService
         private set
-    lateinit var votesService: VotesService
+    lateinit var voteService: VoteService
         private set
 
     fun init()
@@ -99,8 +95,8 @@ class OpiNet : ConfigProvider, ScreenModel
         runBlocking {
             userService = DatabaseUserService(database).also { it.init() }
             commentService = DatabaseCommentService(database).also { it.init() }
-            votesService = DatabaseVotesService(database).also { it.init() }
-            postService = DatabasePostService(database, commentService, votesService).also { it.init() }
+            voteService = DatabaseVoteService(database).also { it.init() }
+            postService = DatabasePostService(database, commentService, voteService).also { it.init() }
         }
     }
 

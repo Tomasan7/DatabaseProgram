@@ -15,14 +15,14 @@ import me.tomasan7.opinet.comment.CommentService
 import me.tomasan7.opinet.post.PostService
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.util.replace
-import me.tomasan7.opinet.votes.VoteDto
-import me.tomasan7.opinet.votes.VotesService
+import me.tomasan7.opinet.vote.VoteDto
+import me.tomasan7.opinet.vote.VoteService
 
 class FeedScreenModel(
     private val userService: UserService,
     private val postService: PostService,
     private val commentService: CommentService,
-    private val votesService: VotesService,
+    private val voteService: VoteService,
     private val currentUser: User
 ) : ScreenModel
 {
@@ -37,7 +37,7 @@ class FeedScreenModel(
             try
             {
                 val posts = postService.getAllPostsOrderedByUploadDateDesc().map { postDto ->
-                    val votesOnPost = votesService.getVotesOnPost(postDto.id!!)
+                    val votesOnPost = voteService.getVotesOnPost(postDto.id!!)
                     val voted = votesOnPost.find { it.userId == currentUser.id }?.upDown
                     postDto.toPost(
                         authorGetter = { userId -> getUser(userId) },
@@ -149,14 +149,14 @@ class FeedScreenModel(
             {
                 val previousVote = post.voted
                 if (previousVote != null)
-                    votesService.removeVoteByUserOnPost(currentUser.id, post.id)
+                    voteService.removeVoteByUserOnPost(currentUser.id, post.id)
                 val voteDto = VoteDto(
                     upDown = value,
                     votedAt = Clock.System.now(),
                     userId = currentUser.id,
                     postId = post.id
                 )
-                votesService.createVote(voteDto)
+                voteService.createVote(voteDto)
                 val newPost = post.copy(
                     voted = value,
                     upVotes = post.upVotes + if (value) 1 else 0 - if (previousVote == true) 1 else 0,
@@ -176,7 +176,7 @@ class FeedScreenModel(
         screenModelScope.launch {
             try
             {
-                val result = votesService.removeVoteByUserOnPost(currentUser.id, post.id)
+                val result = voteService.removeVoteByUserOnPost(currentUser.id, post.id)
                 if (result)
                 {
                     val newPost = post.copy(

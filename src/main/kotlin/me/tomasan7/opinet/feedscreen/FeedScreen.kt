@@ -42,7 +42,7 @@ object FeedScreen : Screen
                 opiNet.userService,
                 opiNet.postService,
                 opiNet.commentService,
-                opiNet.votesService,
+                opiNet.voteService,
                 opiNet.currentUser!!.toUser()
             )
         }

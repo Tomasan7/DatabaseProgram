@@ -1,4 +1,4 @@
-package me.tomasan7.opinet.votes
+package me.tomasan7.opinet.vote
 
 import kotlinx.datetime.Instant
 
