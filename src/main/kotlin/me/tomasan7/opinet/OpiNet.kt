@@ -39,6 +39,7 @@ import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.votes.DatabaseVotesService
 import me.tomasan7.opinet.votes.VotesService
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.io.path.deleteIfExists
@@ -89,6 +90,8 @@ class OpiNet : ConfigProvider, ScreenModel
             user = dbConf.user,
             password = dbConf.password.value,
         )
+
+        TransactionManager.defaultDatabase = database
     }
 
     private fun initServices()
