@@ -30,6 +30,7 @@ diglol-crypto = "0.2.0"
 
 # Parsing
 kotlinCsv = "1.10.0"
+kotlinx-serialization = "1.8.0"
 
 [libraries]
 # Kotlin
@@ -72,6 +73,7 @@ diglolCrypto-hash = { module = "com.diglol.crypto:hash", version.ref = "diglol-c
 
 # Parsing
 kotlinCsv-jvm = { module = "com.jsoizo:kotlin-csv-jvm", version.ref = "kotlinCsv" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [bundles]
 
@@ -79,3 +81,4 @@ kotlinCsv-jvm = { module = "com.jsoizo:kotlin-csv-jvm", version.ref = "kotlinCsv
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinx-serialization" }

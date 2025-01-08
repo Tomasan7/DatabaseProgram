@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 group = "me.tomasan7"
@@ -52,6 +53,7 @@ dependencies {
     implementation(libs.diglolCrypto.hash)
 
     implementation(libs.kotlinCsv.jvm)
+    implementation(libs.kotlinx.serialization.json)
 }
 
 kotlin {
