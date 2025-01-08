@@ -11,6 +11,6 @@ open class View(name: String, private val select: Query): Table(name)
 
     override fun createStatement(): List<String>
     {
-        return listOf("CREATE VIEW IF NOT EXISTS $tableName AS ${select.prepareSQL(QueryBuilder(false))}")
+        return listOf("CREATE OR REPLACE VIEW $tableName AS ${select.prepareSQL(QueryBuilder(false))}")
     }
 }
