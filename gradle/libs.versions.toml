@@ -16,6 +16,7 @@ filekit = "0.8.8"
 exposed = "0.57.0"
 h2 = "2.3.232"
 mssql-jdbc = "12.8.1.jre11"
+mysql-connector-j = "9.1.0"
 
 # Config
 hoplite = "2.9.0"
@@ -57,6 +58,7 @@ exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "e
 exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 mssql-jdbc = { module = "com.microsoft.sqlserver:mssql-jdbc", version.ref = "mssql-jdbc" }
+mysql-connector-j = { module = "com.mysql:mysql-connector-j", version.ref = "mysql-connector-j" }
 
 # Config
 hoplite-core = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
