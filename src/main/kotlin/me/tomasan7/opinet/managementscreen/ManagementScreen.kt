@@ -106,11 +106,14 @@ object ManagementScreen : Screen
         }
 
         Scaffold(
-            snackbarHost = { StackedSnackbarHost(stackedSnackbarHostState) }
+            snackbarHost = { StackedSnackbarHost(stackedSnackbarHostState) },
+            modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxWidth()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
