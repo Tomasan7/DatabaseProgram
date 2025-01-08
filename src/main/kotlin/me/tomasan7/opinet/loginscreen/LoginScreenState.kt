@@ -7,6 +7,6 @@ data class LoginScreenState(
     val password: String = "",
     val passwordShown: Boolean = false,
     val rememberMe: Boolean = false,
-    val errorText: String = "",
+    val errorText: String? = null,
     val loginSuccessEvent: Boolean = false,
 )

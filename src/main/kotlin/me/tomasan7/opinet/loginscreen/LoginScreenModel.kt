@@ -10,9 +10,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import me.tomasan7.opinet.OpiNet
 import me.tomasan7.opinet.user.UserService
-import me.tomasan7.opinet.user.UserTable.password
-import me.tomasan7.opinet.user.UserTable.username
-import java.nio.channels.UnresolvedAddressException
+import me.tomasan7.opinet.util.isNetworkError
 import java.nio.file.Path
 
 private val logger = KotlinLogging.logger { }
@@ -42,15 +40,15 @@ class LoginScreenModel(
         }
     }
 
-    fun setUsername(username: String) = changeUiState(username = username.removeWhitespace(), errorText = "")
+    fun setUsername(username: String) = changeUiState(username = username.removeWhitespace(), errorText = null)
 
-    fun setPassword(password: String) = changeUiState(password = password.removeWhitespace(), errorText = "")
+    fun setPassword(password: String) = changeUiState(password = password.removeWhitespace(), errorText = null)
 
     fun changePasswordVisibility() = changeUiState(passwordShown = !uiState.passwordShown)
 
     fun setRememberMe(value: Boolean) = changeUiState(rememberMe = value)
 
-    fun loginSuccessEventConsumed() = changeUiState(loginSuccessEvent = false, errorText = "")
+    fun loginSuccessEventConsumed() = changeUiState(loginSuccessEvent = false, errorText = null)
 
     fun login()
     {
@@ -90,16 +88,24 @@ class LoginScreenModel(
                     changeUiState(errorText = "Incorrect username or password")
                 }
             }
-            catch (e: UnresolvedAddressException)
-            {
-                changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
-            }
             catch (e: Exception)
             {
-                changeUiState(errorText = "There was an unknown error")
-                e.printStackTrace()
+                if (e.isNetworkError())
+                {
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                }
+                else
+                {
+                    changeUiState(errorText = "There was an unknown error")
+                    e.printStackTrace()
+                }
             }
         }
+    }
+
+    fun errorTextConsumed()
+    {
+        changeUiState(errorText = null)
     }
 
     private fun saveCredentials()
@@ -148,7 +154,7 @@ class LoginScreenModel(
         password: String = uiState.password,
         passwordShown: Boolean = uiState.passwordShown,
         rememberMe: Boolean = uiState.rememberMe,
-        errorText: String = uiState.errorText,
+        errorText: String? = uiState.errorText,
         loginSuccessEvent: Boolean = uiState.loginSuccessEvent
     )
     {
@@ -163,6 +169,5 @@ class LoginScreenModel(
             loginSuccessEvent = loginSuccessEvent
         )
     }
-
     private fun String.removeWhitespace() = this.replace(Regex("\\s"), "")
 }

@@ -34,7 +34,7 @@ dependencies {
     implementation(libs.exposed.kotlin.datetime)
     runtimeOnly(libs.h2)
     runtimeOnly(libs.mssql.jdbc)
-    runtimeOnly(libs.mysql.connector.j)
+    implementation(libs.mysql.connector.j)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.hocon)
     implementation(libs.logback.classic)
