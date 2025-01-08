@@ -108,6 +108,7 @@ class OpiNet : ConfigProvider, ScreenModel
     fun start() = singleWindowApplication(
         title = "OpiNet",
         state = WindowState(width = 800.dp, height = 800.dp),
+        exitProcessOnExit = true,
         icon = BitmapPainter(useResource("opinet.png", ::loadImageBitmap))
     ) {
         AppTheme {
