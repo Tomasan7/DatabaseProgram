@@ -2,7 +2,6 @@ package me.tomasan7.opinet.report
 
 import me.tomasan7.opinet.comment.CommentTable
 import me.tomasan7.opinet.database.View
-import me.tomasan7.opinet.post.PostTable
 import me.tomasan7.opinet.user.UserTable
 import me.tomasan7.opinet.vote.VoteTable
 import org.jetbrains.exposed.sql.Expression
@@ -33,6 +32,6 @@ object UserActivityView : View(
         .groupBy(UserTable.id)
 )
 {
-    val postId = column(UserTable.id)
+    val userId = column(UserTable.id)
     val activity = registerColumn(ACTIVITY_SUM_ALIAS, IntegerColumnType())
 }
