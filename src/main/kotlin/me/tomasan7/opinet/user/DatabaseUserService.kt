@@ -13,14 +13,6 @@ class DatabaseUserService(
     /* TODO: Replace with Argon2 */
     private val sha256 = Hash(Hash.Type.SHA256)
 
-    private fun ResultRow.toUser() = UserDto(
-        username = this[UserTable.username],
-        firstName = this[UserTable.firstName],
-        lastName = this[UserTable.lastName],
-        gender = this[UserTable.gender],
-        id = this[UserTable.id].value
-    )
-
     override suspend fun createUser(userDto: UserDto, password: String): Int
     {
         if (userDto.id != null)
