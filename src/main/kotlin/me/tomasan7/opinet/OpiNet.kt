@@ -28,6 +28,8 @@ import me.tomasan7.opinet.config.FileConfigProvider
 import me.tomasan7.opinet.loginscreen.LoginScreen
 import me.tomasan7.opinet.post.DatabasePostService
 import me.tomasan7.opinet.post.PostService
+import me.tomasan7.opinet.report.DatabaseReportService
+import me.tomasan7.opinet.report.ReportService
 import me.tomasan7.opinet.ui.theme.AppTheme
 import me.tomasan7.opinet.user.DatabaseUserService
 import me.tomasan7.opinet.user.UserDto
@@ -54,6 +56,8 @@ class OpiNet : ConfigProvider, ScreenModel
     lateinit var commentService: CommentService
         private set
     lateinit var voteService: VoteService
+        private set
+    lateinit var reportService: ReportService
         private set
 
     fun init()
@@ -97,6 +101,7 @@ class OpiNet : ConfigProvider, ScreenModel
             commentService = DatabaseCommentService(database).also { it.init() }
             voteService = DatabaseVoteService(database).also { it.init() }
             postService = DatabasePostService(database, commentService, voteService).also { it.init() }
+            reportService = DatabaseReportService(database).also { it.init() }
         }
     }
 
