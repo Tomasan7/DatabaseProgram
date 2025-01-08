@@ -2,3 +2,4 @@
 - Make gender enum an enum on the database side
 - Handle errors better
 - Optimize queries (limit 1)
+- Add logging
