@@ -7,22 +7,35 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
+import io.github.vinceglb.filekit.core.FileKit
+import io.github.vinceglb.filekit.core.PlatformFile
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToStream
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.post.PostDto
 import me.tomasan7.opinet.post.PostService
+import me.tomasan7.opinet.report.ReportService
 import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.user.UsernameAlreadyExistsException
 import me.tomasan7.opinet.util.now
 import me.tomasan7.opinet.util.parseLocalDate
+import java.io.ByteArrayOutputStream
 import java.time.format.DateTimeFormatter
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.component3
 import kotlin.collections.component4
+import kotlin.io.path.Path
+import kotlin.io.path.absolute
+import kotlin.io.path.pathString
 import kotlin.sequences.forEach
 
 private val logger = logger { }
@@ -30,11 +43,23 @@ private val logger = logger { }
 class ManagementScreenModel(
     val importConfig: Config.Import,
     val userService: UserService,
-    val postService: PostService
+    val postService: PostService,
+    val reportService: ReportService
 ) : ScreenModel
 {
     var uiState by mutableStateOf(ManagementScreenState())
         private set
+
+    private val json = Json {
+        prettyPrint = true
+    }
+
+    private var loadTotalReportJob: Job? = null
+
+    init
+    {
+        loadTotalReport()
+    }
 
     fun onImportUsersClicked()
     {
@@ -107,6 +132,60 @@ class ManagementScreenModel(
         )
     }
 
+    private fun loadTotalReport()
+    {
+        if (loadTotalReportJob?.isActive == true)
+            return
+
+        loadTotalReportJob = screenModelScope.launch {
+            val mostActiveUserDef = async { reportService.getMostActiveUser() }
+            val mostActivePostDef = async { reportService.getMostActivePost() }
+            val mostUpvotedPostDef = async { reportService.getMostUpvotedPost() }
+            val mostDownvotedPostDef = async { reportService.getMostDownvotedPost() }
+            val mostCommentedPostDef = async { reportService.getMostCommentedPost() }
+
+            awaitAll(
+                mostActiveUserDef,
+                mostActivePostDef,
+                mostUpvotedPostDef,
+                mostDownvotedPostDef,
+                mostCommentedPostDef
+            )
+
+            val totalReport = TotalReport(
+                mostActiveUser = mostActiveUserDef.await(),
+                mostActivePost = mostActivePostDef.await(),
+                mostUpvotedPost = mostUpvotedPostDef.await(),
+                mostDownvotedPost = mostDownvotedPostDef.await(),
+                mostCommentedPost = mostCommentedPostDef.await()
+            )
+
+            uiState = uiState.copy(
+                totalReport = totalReport
+            )
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun onGenerateReportClicked()
+    {
+        screenModelScope.launch {
+            if (uiState.totalReport == null)
+            {
+                if (loadTotalReportJob?.isActive != true)
+                    loadTotalReport()
+
+                loadTotalReportJob?.join()
+            }
+
+            val byteArrayStream = ByteArrayOutputStream()
+            json.encodeToStream(uiState.totalReport, byteArrayStream)
+
+            uiState = uiState.copy(
+                exportTotalReportBytes = byteArrayStream.toByteArray()
+            )
+        }
+    }
 
     fun onImportPostsFilesChosen(paths: Iterable<String>)
     {
@@ -191,5 +270,10 @@ class ManagementScreenModel(
         uiState = uiState.copy(
             importPosts = false
         )
+    }
+
+    fun onReportExportFileSave(file: PlatformFile?)
+    {
+        uiState = uiState.copy(exportTotalReportBytes = null)
     }
 }
