@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.compose.file.picker)
     implementation(libs.filekit.core)
     implementation(libs.filekit.compose)
+    implementation(libs.compose.stacked.snackbar)
     //implementation(libs.diglolCrypto.kdf)
     implementation(libs.diglolCrypto.hash)
 

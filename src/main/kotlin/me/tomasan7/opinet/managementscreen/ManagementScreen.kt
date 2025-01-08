@@ -1,5 +1,6 @@
 package me.tomasan7.opinet.managementscreen
 
+import StackedSnackbarHost
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ import io.github.vinceglb.filekit.core.PickerType
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.ui.component.HorizontalSpacer
 import me.tomasan7.opinet.ui.component.VerticalSpacer
+import rememberStackedSnackbarHostState
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 
@@ -83,56 +85,81 @@ object ManagementScreen : Screen
                 )
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { navigator.pop() }
-                ) {
-                    Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
-                }
+        val stackedSnackbarHostState = rememberStackedSnackbarHostState(
+            maxStack = 1,
+            animation = StackedSnackbarAnimation.Slide
+        )
 
-                Text(
-                    text = "Management",
-                    style = MaterialTheme.typography.headlineLarge
+        LaunchedEffect(uiState.usersImportResult) {
+            if (uiState.usersImportResult != null)
+                stackedSnackbarHostState.showSuccessSnackbar(
+                    title = "Imported ${uiState.usersImportResult} users",
+                    duration = StackedSnackbarDuration.Short
                 )
-            }
-            VerticalSpacer(64.dp)
-            Text(
-                text = "Import",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            VerticalSpacer(24.dp)
-            Button(
-                onClick = { model.onImportUsersClicked() }
+        }
+        LaunchedEffect(uiState.postsImportResult) {
+            if (uiState.postsImportResult != null)
+                stackedSnackbarHostState.showSuccessSnackbar(
+                    title = "Imported ${uiState.postsImportResult} posts",
+                    duration = StackedSnackbarDuration.Short
+                )
+        }
+
+        Scaffold(
+            snackbarHost = { StackedSnackbarHost(stackedSnackbarHostState) }
+        ) { innerPadding ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(innerPadding)
             ) {
-                Text("Import users")
-            }
-            Button(
-                onClick = { model.onImportPostsClicked() }
-            ) {
-                Text("Import posts")
-            }
-            VerticalSpacer(64.dp)
-            Text(
-                text = "Reports",
-                style = MaterialTheme.typography.headlineMedium
-            )
-            VerticalSpacer(24.dp)
-            TotalReport(
-                totalReport = uiState.totalReport,
-                modifier = Modifier.widthIn(500.dp, 700.dp)
-            )
-            VerticalSpacer(24.dp)
-            Button(
-                onClick = { model.onGenerateReportClicked() }
-            ) {
-                Icon(Icons.Default.Download, contentDescription = "Export")
-                HorizontalSpacer(8.dp)
-                Text("Export report")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { navigator.pop() }
+                    ) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+                    }
+
+                    Text(
+                        text = "Management",
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                }
+                VerticalSpacer(64.dp)
+                Text(
+                    text = "Import",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                VerticalSpacer(24.dp)
+                Button(
+                    onClick = { model.onImportUsersClicked() }
+                ) {
+                    Text("Import users")
+                }
+                Button(
+                    onClick = { model.onImportPostsClicked() }
+                ) {
+                    Text("Import posts")
+                }
+                VerticalSpacer(64.dp)
+                Text(
+                    text = "Reports",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                VerticalSpacer(24.dp)
+                TotalReport(
+                    totalReport = uiState.totalReport,
+                    modifier = Modifier.widthIn(500.dp, 700.dp)
+                )
+                VerticalSpacer(24.dp)
+                Button(
+                    onClick = { model.onGenerateReportClicked() }
+                ) {
+                    Icon(Icons.Default.Download, contentDescription = "Export")
+                    HorizontalSpacer(8.dp)
+                    Text("Export report")
+                }
             }
         }
     }

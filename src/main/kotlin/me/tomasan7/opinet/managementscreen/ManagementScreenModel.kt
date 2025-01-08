@@ -200,6 +200,7 @@ class ManagementScreenModel(
         }
 
         screenModelScope.launch {
+            var importedPostsCount = 0
             for (path in paths)
                 csvReader {
                     delimiter = importConfig.csvDelimiter
@@ -254,6 +255,7 @@ class ManagementScreenModel(
                         try
                         {
                             postService.createPost(postDto)
+                            importedPostsCount++
                             logger.info { "IMPORT: Imported post titled '$title' by $authorUsername uploaded at $uploadDate" }
                         }
                         catch (e: Exception)
@@ -262,6 +264,10 @@ class ManagementScreenModel(
                         }
                     }
                 }
+
+            uiState = uiState.copy(
+                postsImportResult = importedPostsCount
+            )
         }
     }
 

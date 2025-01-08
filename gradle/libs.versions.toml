@@ -11,6 +11,7 @@ voyager = "1.1.0-beta03"
 human-readable = "1.10.0"
 compose-filePicker = "3.1.0"
 filekit = "0.8.8"
+compose-stacked-snackbar = "1.0.4"
 
 # Database
 exposed = "0.57.0"
@@ -51,6 +52,7 @@ humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "human-re
 compose-file-picker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "compose-filePicker" }
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekit" }
+compose-stacked-snackbar = { module = "io.github.rizmaulana:compose-stacked-snackbar", version.ref = "compose-stacked-snackbar" }
 
 # Database
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
