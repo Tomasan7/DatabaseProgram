@@ -102,7 +102,7 @@ class LoginScreenModel(
         }
     }
 
-    private suspend fun saveCredentials()
+    private fun saveCredentials()
     {
         val username = uiState.username
         val password = uiState.password
@@ -112,7 +112,7 @@ class LoginScreenModel(
         sessionFile.toFile().writeText(encoded)
     }
 
-    private suspend fun loadCredentials(): Pair<String, String>?
+    private fun loadCredentials(): Pair<String, String>?
     {
         if (!sessionFile.toFile().exists())
             return null
