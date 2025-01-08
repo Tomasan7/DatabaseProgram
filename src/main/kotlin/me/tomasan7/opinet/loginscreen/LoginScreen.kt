@@ -1,13 +1,18 @@
 package me.tomasan7.opinet.loginscreen
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.BasicTooltipBox
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -18,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -39,6 +45,7 @@ object LoginScreen : Screen
 {
     private fun readResolve(): Any = LoginScreen
 
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     @Composable
     override fun Content()
     {
@@ -111,12 +118,29 @@ object LoginScreen : Screen
                 }
             }
 
-            IconButton(
-                onClick = { navigator push ManagementScreen },
+            TooltipArea(
+                tooltip = {
+                    Surface(
+                        modifier = Modifier.shadow(4.dp),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = "Management",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.background,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
             ) {
-                Icon(Icons.Outlined.TableView, contentDescription = "management")
+                IconButton(
+                    onClick = { navigator push ManagementScreen }
+                ) {
+                    Icon(Icons.Outlined.TableView, contentDescription = "management")
+                }
             }
         }
     }
