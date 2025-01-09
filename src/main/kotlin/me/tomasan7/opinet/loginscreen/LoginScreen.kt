@@ -128,7 +128,10 @@ object LoginScreen : Screen
                         onClick = { model.setRememberMe(!uiState.rememberMe) }
                     )
                     VerticalSpacer(16.dp)
-                    Button({ model.login() }) {
+                    Button(
+                        onClick = { model.login() },
+                        enabled = uiState.username.isNotBlank() && uiState.password.isNotBlank()
+                    ) {
                         Text("Login")
                     }
                     TextButton({ navigator push RegisterScreen(uiState.username, uiState.password) }) {
