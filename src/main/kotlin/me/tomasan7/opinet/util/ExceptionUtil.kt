@@ -4,7 +4,7 @@ import com.mysql.cj.jdbc.exceptions.CommunicationsException
 import java.net.ConnectException
 import java.nio.channels.UnresolvedAddressException
 
-fun Exception.isNetworkError(): Boolean
+fun Throwable.isNetworkError(): Boolean
 {
     return this is ConnectException ||
             this is UnresolvedAddressException ||

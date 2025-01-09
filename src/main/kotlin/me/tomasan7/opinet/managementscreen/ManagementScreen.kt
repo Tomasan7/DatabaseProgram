@@ -105,6 +105,14 @@ object ManagementScreen : Screen
                 )
         }
 
+        LaunchedEffect(uiState.errorText) {
+            if (uiState.errorText != null)
+            {
+                stackedSnackbarHostState.showErrorSnackbar(uiState.errorText)
+                model.onErrorConsumed()
+            }
+        }
+
         Scaffold(
             snackbarHost = { StackedSnackbarHost(stackedSnackbarHostState) },
             modifier = Modifier.fillMaxSize()

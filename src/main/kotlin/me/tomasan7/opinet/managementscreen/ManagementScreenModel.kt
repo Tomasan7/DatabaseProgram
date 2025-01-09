@@ -7,9 +7,10 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
-import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PlatformFile
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.user.UsernameAlreadyExistsException
+import me.tomasan7.opinet.util.isNetworkError
 import me.tomasan7.opinet.util.now
 import me.tomasan7.opinet.util.parseLocalDate
 import java.io.ByteArrayOutputStream
@@ -33,9 +35,6 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.component3
 import kotlin.collections.component4
-import kotlin.io.path.Path
-import kotlin.io.path.absolute
-import kotlin.io.path.pathString
 import kotlin.sequences.forEach
 
 private val logger = logger { }
@@ -63,16 +62,12 @@ class ManagementScreenModel(
 
     fun onImportUsersClicked()
     {
-        uiState = uiState.copy(
-            importUsers = true
-        )
+        changeUiState(importUsers = true)
     }
 
     fun onImportUsersFilesChosen(files: Iterable<String>)
     {
-        uiState = uiState.copy(
-            importUsers = false
-        )
+        changeUiState(importUsers = false)
 
         screenModelScope.launch {
             var importedUsersCount = 0
@@ -107,29 +102,27 @@ class ManagementScreenModel(
                         }
                         catch (e: Exception)
                         {
+                            if (e.isNetworkError())
+                                changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                            else if (e is CancellationException)
+                                throw e
                             logger.error { "IMPORT: $username - $firstName $lastName was not imported. (${e.message})" }
                         }
                     }
                 }
 
-            uiState = uiState.copy(
-                usersImportResult = importedUsersCount
-            )
+            changeUiState(usersImportResult = importedUsersCount)
         }
     }
 
     fun onImportPostsClicked()
     {
-        uiState = uiState.copy(
-            importPosts = true
-        )
+        changeUiState(importPosts = true)
     }
 
     fun onImportUsersDismissed()
     {
-        uiState = uiState.copy(
-            importUsers = false
-        )
+        changeUiState(importUsers = false)
     }
 
     private fun loadTotalReport()
@@ -138,31 +131,40 @@ class ManagementScreenModel(
             return
 
         loadTotalReportJob = screenModelScope.launch {
-            val mostActiveUserDef = async { reportService.getMostActiveUser() }
-            val mostActivePostDef = async { reportService.getMostActivePost() }
-            val mostUpvotedPostDef = async { reportService.getMostUpvotedPost() }
-            val mostDownvotedPostDef = async { reportService.getMostDownvotedPost() }
-            val mostCommentedPostDef = async { reportService.getMostCommentedPost() }
+            val supJob = SupervisorJob()
+            val mostActiveUserDef = async(supJob) { reportService.getMostActiveUser() }
+            val mostActivePostDef = async(supJob) { reportService.getMostActivePost() }
+            val mostUpvotedPostDef = async(supJob) { reportService.getMostUpvotedPost() }
+            val mostDownvotedPostDef = async(supJob) { reportService.getMostDownvotedPost() }
+            val mostCommentedPostDef = async(supJob) { reportService.getMostCommentedPost() }
 
-            awaitAll(
-                mostActiveUserDef,
-                mostActivePostDef,
-                mostUpvotedPostDef,
-                mostDownvotedPostDef,
-                mostCommentedPostDef
-            )
+            try
+            {
+                awaitAll(
+                    mostActiveUserDef,
+                    mostActivePostDef,
+                    mostUpvotedPostDef,
+                    mostDownvotedPostDef,
+                    mostCommentedPostDef
+                )
 
-            val totalReport = TotalReport(
-                mostActiveUser = mostActiveUserDef.await(),
-                mostActivePost = mostActivePostDef.await(),
-                mostUpvotedPost = mostUpvotedPostDef.await(),
-                mostDownvotedPost = mostDownvotedPostDef.await(),
-                mostCommentedPost = mostCommentedPostDef.await()
-            )
+                val totalReport = TotalReport(
+                    mostActiveUser = mostActiveUserDef.await(),
+                    mostActivePost = mostActivePostDef.await(),
+                    mostUpvotedPost = mostUpvotedPostDef.await(),
+                    mostDownvotedPost = mostDownvotedPostDef.await(),
+                    mostCommentedPost = mostCommentedPostDef.await()
+                )
 
-            uiState = uiState.copy(
-                totalReport = totalReport
-            )
+                changeUiState(totalReport = totalReport)
+            }
+            catch (e: Exception)
+            {
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+            }
         }
     }
 
@@ -181,9 +183,7 @@ class ManagementScreenModel(
             val byteArrayStream = ByteArrayOutputStream()
             json.encodeToStream(uiState.totalReport, byteArrayStream)
 
-            uiState = uiState.copy(
-                exportTotalReportBytes = byteArrayStream.toByteArray()
-            )
+            changeUiState(exportTotalReportBytes = byteArrayStream.toByteArray())
         }
     }
 
@@ -227,7 +227,6 @@ class ManagementScreenModel(
                         catch (e: Exception)
                         {
                             logger.info { "IMPORT: Post was not imported, because it has an invalid upload date format. dd.MM.yyyy is expected." }
-                            println(e)
                             return@forEach
                         }
 
@@ -260,26 +259,52 @@ class ManagementScreenModel(
                         }
                         catch (e: Exception)
                         {
+                            if (e.isNetworkError())
+                                changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                            if (e is CancellationException)
+                                throw e
                             logger.error { "IMPORT: Post titled '$title' was not imported. (${e.message})" }
                         }
                     }
                 }
 
-            uiState = uiState.copy(
-                postsImportResult = importedPostsCount
-            )
+            changeUiState(postsImportResult = importedPostsCount)
         }
+    }
+
+    fun onErrorConsumed()
+    {
+        changeUiState(errorText = null)
     }
 
     fun onImportPostsDismissed()
     {
-        uiState = uiState.copy(
-            importPosts = false
-        )
+        changeUiState(importPosts = false)
     }
 
     fun onReportExportFileSave(file: PlatformFile?)
     {
-        uiState = uiState.copy(exportTotalReportBytes = null)
+        changeUiState(exportTotalReportBytes = null)
+    }
+
+    private fun changeUiState(
+        importUsers: Boolean = uiState.importUsers,
+        usersImportResult: Int? = uiState.usersImportResult,
+        importPosts: Boolean = uiState.importPosts,
+        postsImportResult: Int? = uiState.postsImportResult,
+        totalReport: TotalReport? = uiState.totalReport,
+        errorText: String? = uiState.errorText,
+        exportTotalReportBytes: ByteArray? = uiState.exportTotalReportBytes
+    )
+    {
+        uiState = ManagementScreenState(
+            importUsers = importUsers,
+            usersImportResult = usersImportResult,
+            importPosts = importPosts,
+            postsImportResult = postsImportResult,
+            totalReport = totalReport,
+            errorText = errorText,
+            exportTotalReportBytes = exportTotalReportBytes
+        )
     }
 }
