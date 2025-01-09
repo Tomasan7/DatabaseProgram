@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.collections.immutable.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -14,6 +15,7 @@ import me.tomasan7.opinet.comment.CommentDto
 import me.tomasan7.opinet.comment.CommentService
 import me.tomasan7.opinet.post.PostService
 import me.tomasan7.opinet.user.UserService
+import me.tomasan7.opinet.util.isNetworkError
 import me.tomasan7.opinet.util.replace
 import me.tomasan7.opinet.vote.VoteDto
 import me.tomasan7.opinet.vote.VoteService
@@ -42,7 +44,7 @@ class FeedScreenModel(
                     postDto.toPost(
                         authorGetter = { userId -> getUser(userId) },
                         voted = voted,
-                        commentCountGetter = { commentService.getNumberOfCommentsForPost(postDto.id!!).toInt() },
+                        commentCountGetter = { commentService.getNumberOfCommentsForPost(postDto.id).toInt() },
                         votesGetter = { votesOnPost.count { it.upDown } to votesOnPost.count { !it.upDown } }
                     )
                 }.toImmutableList()
@@ -50,27 +52,49 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
 
     fun editPost(post: Post)
     {
-        uiState = uiState.copy(editPostEvent = post)
+        changeUiState(editPostEvent = post)
+    }
+
+    fun onEventErrorConsumed()
+    {
+        changeUiState(errorText = null)
     }
 
     fun editPostEventConsumed()
     {
-        uiState = uiState.copy(editPostEvent = null)
+        changeUiState(editPostEvent = null)
     }
 
     fun deletePost(post: Post)
     {
         screenModelScope.launch {
-            val result = postService.deletePost(post.id)
-            if (result)
-                changeUiState(posts = (uiState.posts - post).toImmutableList())
+            try
+            {
+                val result = postService.deletePost(post.id)
+                if (result)
+                    changeUiState(posts = (uiState.posts - post).toImmutableList())
+            }
+            catch (e: Exception)
+            {
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
+            }
         }
     }
 
@@ -92,7 +116,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -129,7 +158,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -166,7 +200,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -189,7 +228,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -203,12 +247,16 @@ class FeedScreenModel(
 
     private fun changeUiState(
         posts: ImmutableList<Post> = uiState.posts,
-        commentsDialogState: FeedScreenState.CommentsDialogState = uiState.commentsDialogState
+        commentsDialogState: FeedScreenState.CommentsDialogState = uiState.commentsDialogState,
+        errorText: String? = uiState.errorText,
+        editPostEvent: Post? = uiState.editPostEvent
     )
     {
         uiState = uiState.copy(
             posts = posts,
-            commentsDialogState = commentsDialogState
+            commentsDialogState = commentsDialogState,
+            errorText = errorText,
+            editPostEvent = editPostEvent
         )
     }
 }

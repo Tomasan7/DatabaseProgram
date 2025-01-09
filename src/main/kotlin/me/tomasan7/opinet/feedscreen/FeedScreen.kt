@@ -1,11 +1,13 @@
 package me.tomasan7.opinet.feedscreen
 
+import StackedSnackbarHost
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -27,6 +29,7 @@ import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.loginscreen.LoginScreen
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
+import rememberStackedSnackbarHostState
 
 object FeedScreen : Screen
 {
@@ -72,12 +75,30 @@ object FeedScreen : Screen
             navigator push NewPostScreen(editingPost = uiState.editPostEvent)
         }
 
+        val stackedSnackbarHostState = rememberStackedSnackbarHostState(
+            maxStack = 1,
+            animation = StackedSnackbarAnimation.Slide
+        )
+
+        LaunchedEffect(uiState.errorText) {
+            if (uiState.errorText != null) {
+                stackedSnackbarHostState.showErrorSnackbar(
+                    title = uiState.errorText,
+                    duration = StackedSnackbarDuration.Short
+                )
+                model.onEventErrorConsumed()
+            }
+        }
+
         Scaffold(
             floatingActionButton = {
-                FloatingActionButton({ navigator push NewPostScreen() }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
-                }
-            }
+                ExtendedFloatingActionButton(
+                    onClick = { navigator push NewPostScreen() },
+                    text = { Text("New post") },
+                    icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "New post") }
+                )
+            },
+            snackbarHost = { StackedSnackbarHost(stackedSnackbarHostState) }
         ) { contentPadding ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
