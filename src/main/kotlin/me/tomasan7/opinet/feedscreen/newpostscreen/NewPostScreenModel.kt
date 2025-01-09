@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -16,6 +17,7 @@ import me.tomasan7.opinet.feedscreen.User
 import me.tomasan7.opinet.post.PostDto
 import me.tomasan7.opinet.post.PostService
 import me.tomasan7.opinet.user.UserService
+import me.tomasan7.opinet.util.isNetworkError
 
 class NewPostScreenModel(
     private val postService: PostService,
@@ -36,6 +38,8 @@ class NewPostScreenModel(
 
     fun goBackToFeedEventConsumed() = changeUiState(goBackToFeedEvent = false)
 
+    fun errorEventConsumed() = changeUiState(errorText = null)
+
     fun submit()
     {
         if (editingPost != null)
@@ -46,6 +50,17 @@ class NewPostScreenModel(
 
     private fun submitPost()
     {
+        if (uiState.title.isBlank())
+        {
+            changeUiState(errorText = "Title cannot be blank")
+            return
+        }
+        else if (uiState.content.isBlank())
+        {
+            changeUiState(errorText = "Content cannot be blank")
+            return
+        }
+
         val postDto = PostDto(
             title = uiState.title,
             content = uiState.content,
@@ -61,7 +76,12 @@ class NewPostScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -93,12 +113,14 @@ class NewPostScreenModel(
         title: String = uiState.title,
         content: String = uiState.content,
         goBackToFeedEvent: Boolean = uiState.goBackToFeedEvent,
+        errorText: String? = uiState.errorText
     )
     {
         uiState = uiState.copy(
             title = title,
             content = content,
             goBackToFeedEvent = goBackToFeedEvent,
+            errorText = errorText
         )
     }
 }
