@@ -108,7 +108,10 @@ object ManagementScreen : Screen
         LaunchedEffect(uiState.errorText) {
             if (uiState.errorText != null)
             {
-                stackedSnackbarHostState.showErrorSnackbar(uiState.errorText)
+                stackedSnackbarHostState.showErrorSnackbar(
+                    uiState.errorText,
+                    duration = StackedSnackbarDuration.Short
+                )
                 model.onErrorConsumed()
             }
         }
