@@ -12,7 +12,6 @@ class DatabaseUserService(
 {
     /* TODO: Replace with Argon2 */
     private val sha256 = Hash(Hash.Type.SHA256)
-
     override suspend fun createUser(userDto: UserDto, password: String): Int
     {
         if (userDto.id != null)
@@ -53,6 +52,14 @@ class DatabaseUserService(
             .where { UserTable.username eq username }
             .singleOrNull()
             ?.toUser()
+    }
+
+    override suspend fun getAllUsers(): List<UserDto>
+    {
+        return dbQuery {
+            UserTable.selectAll()
+                .map { it.toUser() }
+        }
     }
 
     override suspend fun loginUser(username: String, password: String): Boolean

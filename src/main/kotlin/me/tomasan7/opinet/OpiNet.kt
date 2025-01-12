@@ -25,6 +25,8 @@ import me.tomasan7.opinet.comment.DatabaseCommentService
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.config.ConfigProvider
 import me.tomasan7.opinet.config.FileConfigProvider
+import me.tomasan7.opinet.friend.DatabaseFriendService
+import me.tomasan7.opinet.friend.FriendService
 import me.tomasan7.opinet.loginscreen.LoginScreen
 import me.tomasan7.opinet.post.DatabasePostService
 import me.tomasan7.opinet.post.PostService
@@ -58,6 +60,8 @@ class OpiNet : ConfigProvider, ScreenModel
     lateinit var voteService: VoteService
         private set
     lateinit var reportService: ReportService
+        private set
+    lateinit var friendService: FriendService
         private set
 
     fun init()
@@ -102,6 +106,7 @@ class OpiNet : ConfigProvider, ScreenModel
             voteService = DatabaseVoteService(database).also { it.init() }
             postService = DatabasePostService(database, commentService, voteService).also { it.init() }
             reportService = DatabaseReportService(database).also { it.init() }
+            friendService = DatabaseFriendService(database).also { it.init() }
         }
     }
 
