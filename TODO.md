@@ -3,3 +3,4 @@
 - Handle errors better
 - Optimize queries (limit 1)
 - Add logging
+- Handle errors during import (invalid format)
