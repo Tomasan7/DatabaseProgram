@@ -19,6 +19,7 @@ import com.alexfacciorusso.previewer.PreviewTheme
 import me.tomasan7.opinet.feedscreen.Post
 import me.tomasan7.opinet.feedscreen.toUser
 import me.tomasan7.opinet.getOpiNet
+import me.tomasan7.opinet.ui.component.CheckField
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
 import rememberStackedSnackbarHostState
@@ -114,6 +115,12 @@ data class NewPostScreen(
                         label = { Text("Content") },
                         modifier = Modifier
                             .height(200.dp)
+                    )
+                    VerticalSpacer(16.dp)
+                    CheckField(
+                        text = "Public ${if (uiState.public) "(visible to everyone)" else "(only visible to friends)"}",
+                        checked = uiState.public,
+                        onClick = { model.setPublic(!uiState.public) }
                     )
                     VerticalSpacer(16.dp)
                     Button(

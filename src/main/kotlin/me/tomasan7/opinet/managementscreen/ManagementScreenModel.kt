@@ -213,13 +213,13 @@ class ManagementScreenModel(
                 try
                 {
                     readCsvSequence(path) { fields ->
-                        if (fields.size != 4)
+                        if (fields.size != 5)
                         {
-                            logger.info { "IMPORT: Post was not imported, because it has ${fields.size} fields instead of 4" }
+                            logger.info { "IMPORT: Post was not imported, because it has ${fields.size} fields instead of 5" }
                             throw CSVFieldNumDifferentException(5, -1, fields.size)
                         }
 
-                        val (authorUsername, uploadDateStr, title, content) = fields
+                        val (authorUsername, publicStr, uploadDateStr, title, content) = fields
 
                         if (authorUsername.isBlank() || uploadDateStr.isBlank() || title.isBlank() || content.isBlank())
                             return@readCsvSequence logger.info { "IMPORT: Post was not imported, because it has empty fields" }
@@ -246,6 +246,7 @@ class ManagementScreenModel(
                             title = title,
                             content = content,
                             uploadDate = uploadDate,
+                            public = publicStr.toBoolean(),
                             authorId = author.id!!
                         )
 
@@ -292,6 +293,7 @@ class ManagementScreenModel(
     {
         return listOf(
             "authorName",
+            "public(true/false)",
             "uploadDate(${importConfig.dateFormat})",
             "title",
             "content"

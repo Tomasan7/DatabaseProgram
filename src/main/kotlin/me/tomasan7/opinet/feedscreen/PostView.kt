@@ -171,6 +171,7 @@ fun PostPreview()
         true,
         5,
         3,
+        true,
         1
     )
 

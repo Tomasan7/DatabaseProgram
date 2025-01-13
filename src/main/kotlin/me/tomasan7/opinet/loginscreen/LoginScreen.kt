@@ -29,6 +29,7 @@ import me.tomasan7.opinet.feedscreen.FeedScreen
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.managementscreen.ManagementScreen
 import me.tomasan7.opinet.registerscreen.RegisterScreen
+import me.tomasan7.opinet.ui.component.CheckField
 import me.tomasan7.opinet.ui.component.PasswordTextField
 import me.tomasan7.opinet.ui.component.ScreenTitle
 import me.tomasan7.opinet.ui.component.Tooltipped
@@ -111,7 +112,8 @@ object LoginScreen : Screen
                             onDone = { model.login() }
                         )
                     )
-                    RememberMe(
+                    CheckField(
+                        text = "Remember me",
                         checked = uiState.rememberMe,
                         onClick = { model.setRememberMe(!uiState.rememberMe) }
                     )
@@ -140,28 +142,6 @@ object LoginScreen : Screen
                     }
                 }
             }
-        }
-    }
-
-    @Composable
-    private fun RememberMe(
-        checked: Boolean,
-        onClick: () -> Unit
-    )
-    {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable(onClick = onClick)
-                .requiredHeight(ButtonDefaults.MinHeight)
-        ) {
-            Checkbox(
-                checked = checked,
-                onCheckedChange = null
-            )
-            Text("Remember me")
         }
     }
 }

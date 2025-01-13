@@ -7,5 +7,6 @@ fun ResultRow.toPostDto() = PostDto(
     content = this[PostTable.content],
     authorId = this[PostTable.authorId].value,
     uploadDate = this[PostTable.uploadDate],
+    public = this[PostTable.public],
     id = this[PostTable.id].value
 )

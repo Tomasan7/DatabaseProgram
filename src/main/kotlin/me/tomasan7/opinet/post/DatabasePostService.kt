@@ -21,6 +21,7 @@ class DatabasePostService(
         return dbQuery {
             PostTable.insertAndGetId {
                 it[title] = postDto.title
+                it[public] = postDto.public
                 it[content] = postDto.content
                 it[uploadDate] = postDto.uploadDate
                 it[authorId] = postDto.authorId

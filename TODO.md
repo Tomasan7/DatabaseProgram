@@ -4,3 +4,4 @@
 - Optimize queries (limit 1)
 - Add logging
 - Handle errors during import (invalid format)
+- Implement remove friend

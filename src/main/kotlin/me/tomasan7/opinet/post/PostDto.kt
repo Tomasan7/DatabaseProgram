@@ -9,5 +9,6 @@ data class PostDto(
     val content: String,
     val uploadDate: LocalDate,
     val authorId: Int,
+    val public: Boolean,
     val id: Int? = null
 )

@@ -29,7 +29,8 @@ class NewPostScreenModel(
     var uiState by mutableStateOf(NewPostScreenState(
         isEditing = editingPost != null,
         title = editingPost?.title ?: "",
-        content = editingPost?.content ?: ""
+        content = editingPost?.content ?: "",
+        public = editingPost?.public == true
     ))
         private set
 
@@ -38,6 +39,8 @@ class NewPostScreenModel(
     fun setContent(content: String) = changeUiState(content = content)
 
     fun goBackToFeedEventConsumed() = changeUiState(goBackToFeedEvent = false)
+
+    fun setPublic(value: Boolean) = changeUiState(public = value)
 
     fun errorEventConsumed() = changeUiState(errorText = null)
 
@@ -66,6 +69,7 @@ class NewPostScreenModel(
             title = uiState.title,
             content = uiState.content,
             uploadDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
+            public = uiState.public,
             authorId = currentUser.id
         )
 
@@ -93,6 +97,7 @@ class NewPostScreenModel(
             id = editingPost!!.id,
             title = uiState.title,
             content = uiState.content,
+            public = uiState.public,
             uploadDate = editingPost.uploadDate,
             authorId = editingPost.author.id
         )
@@ -113,12 +118,14 @@ class NewPostScreenModel(
     private fun changeUiState(
         title: String = uiState.title,
         content: String = uiState.content,
+        public: Boolean = uiState.public,
         goBackToFeedEvent: Boolean = uiState.goBackToFeedEvent,
         errorText: String? = uiState.errorText
     )
     {
         uiState = uiState.copy(
             title = title,
+            public = public,
             content = content,
             goBackToFeedEvent = goBackToFeedEvent,
             errorText = errorText

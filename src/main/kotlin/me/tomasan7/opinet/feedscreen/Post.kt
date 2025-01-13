@@ -12,6 +12,7 @@ data class Post(
     val voted: Boolean?,
     val upVotes: Int,
     val downVotes: Int,
+    val public: Boolean,
     val id: Int
 )
 
@@ -30,6 +31,7 @@ inline fun PostDto.toPost(
         voted = voted,
         upVotes = upVotes,
         downVotes = downVotes,
+        public = public,
         id = id
     )
 }
