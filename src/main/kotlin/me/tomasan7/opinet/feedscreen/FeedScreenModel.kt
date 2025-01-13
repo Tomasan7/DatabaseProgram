@@ -151,7 +151,7 @@ class FeedScreenModel(
                 val newPost = oldPost.copy(
                     commentCount = oldPost.commentCount + 1
                 )
-                val newPosts = (uiState.posts - oldPost) + newPost
+                val newPosts = uiState.posts.replace(oldPost, newPost)
                 changeUiState(
                     commentsDialogState = uiState.commentsDialogState.copy(comments = newComments),
                     posts = newPosts.toImmutableList()
