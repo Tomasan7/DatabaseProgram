@@ -18,6 +18,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.post.PostDto
 import me.tomasan7.opinet.post.PostService
@@ -103,7 +104,7 @@ class ManagementScreenModel(
                         catch (e: Exception)
                         {
                             if (e.isNetworkError())
-                                changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                                changeUiState(errorText = Messages.networkError)
                             else if (e is CancellationException)
                                 throw e
                             logger.error { "IMPORT: $username - $firstName $lastName was not imported. (${e.message})" }
@@ -161,7 +162,7 @@ class ManagementScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
             }
@@ -260,7 +261,7 @@ class ManagementScreenModel(
                         catch (e: Exception)
                         {
                             if (e.isNetworkError())
-                                changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                                changeUiState(errorText = Messages.networkError)
                             if (e is CancellationException)
                                 throw e
                             logger.error { "IMPORT: Post titled '$title' was not imported. (${e.message})" }

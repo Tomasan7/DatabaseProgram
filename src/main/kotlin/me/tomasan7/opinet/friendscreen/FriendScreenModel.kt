@@ -11,6 +11,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.friend.FriendService
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
@@ -43,7 +44,7 @@ class FriendScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -68,7 +69,7 @@ class FriendScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -88,7 +89,7 @@ class FriendScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -121,7 +122,7 @@ class FriendScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else

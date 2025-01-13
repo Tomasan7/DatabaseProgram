@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.feedscreen.Post
 import me.tomasan7.opinet.feedscreen.User
@@ -77,7 +78,7 @@ class NewPostScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else

@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.OpiNet
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.user.Gender
@@ -82,7 +83,7 @@ class RegisterScreenModel(
             }
             catch (e: UnresolvedAddressException)
             {
-                changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                changeUiState(errorText = Messages.networkError)
             }
             catch (e: UsernameAlreadyExistsException)
             {

@@ -8,6 +8,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.OpiNet
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.util.isNetworkError
@@ -92,7 +93,7 @@ class LoginScreenModel(
             {
                 if (e.isNetworkError())
                 {
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 }
                 else
                 {

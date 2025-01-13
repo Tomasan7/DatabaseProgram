@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.comment.CommentDto
 import me.tomasan7.opinet.comment.CommentService
 import me.tomasan7.opinet.post.PostService
@@ -53,7 +54,7 @@ class FeedScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -89,7 +90,7 @@ class FeedScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -117,7 +118,7 @@ class FeedScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -159,7 +160,7 @@ class FeedScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -201,7 +202,7 @@ class FeedScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
@@ -229,7 +230,7 @@ class FeedScreenModel(
             catch (e: Exception)
             {
                 if (e.isNetworkError())
-                    changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                    changeUiState(errorText = Messages.networkError)
                 else if (e is CancellationException)
                     throw e
                 else
