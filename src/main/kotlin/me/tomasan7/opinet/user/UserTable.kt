@@ -8,5 +8,5 @@ object UserTable : IntIdTable("user")
     val firstName = varchar("firstName", 50)
     val lastName = varchar("lastName", 50)
     val password = binary("password", 32)
-    val gender = enumerationByName<Gender>("gender", 20)
+    val gender = enumerationByName<Gender>("gender", 20).check { it inList Gender.entries }
 }
