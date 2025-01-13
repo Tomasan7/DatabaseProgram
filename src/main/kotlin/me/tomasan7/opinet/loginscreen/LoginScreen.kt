@@ -1,23 +1,15 @@
 package me.tomasan7.opinet.loginscreen
 
+import StackedSnackbarAnimation
+import StackedSnackbarDuration
 import StackedSnackbarHost
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.BasicTooltipBox
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardTab
 import androidx.compose.material.icons.outlined.TableView
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -25,7 +17,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -39,10 +30,10 @@ import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.managementscreen.ManagementScreen
 import me.tomasan7.opinet.registerscreen.RegisterScreen
 import me.tomasan7.opinet.ui.component.PasswordTextField
+import me.tomasan7.opinet.ui.component.Tooltipped
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
 import rememberStackedSnackbarHostState
-import kotlin.io.path.Path
 
 object LoginScreen : Screen
 {
@@ -142,21 +133,8 @@ object LoginScreen : Screen
                     }
                 }
 
-                TooltipArea(
-                    tooltip = {
-                        Surface(
-                            modifier = Modifier.shadow(4.dp),
-                            color = MaterialTheme.colorScheme.onBackground,
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                text = "Management",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.background,
-                                modifier = Modifier.padding(10.dp)
-                            )
-                        }
-                    },
+                Tooltipped(
+                    tooltip = "Management",
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                 ) {

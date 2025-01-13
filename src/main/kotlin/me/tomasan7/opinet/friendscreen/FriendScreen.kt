@@ -1,8 +1,9 @@
 package me.tomasan7.opinet.friendscreen
 
+import StackedSnackbarAnimation
+import StackedSnackbarDuration
 import StackedSnackbarHost
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +21,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -28,6 +28,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import me.tomasan7.opinet.getOpiNet
+import me.tomasan7.opinet.ui.component.Tooltipped
 import me.tomasan7.opinet.user.UserDto
 import rememberStackedSnackbarHostState
 
@@ -244,28 +245,15 @@ object FriendScreen : Screen
             ) {
                 Text(text = friend.firstName + " " + friend.lastName)
 
-                TooltipArea(
-                    tooltip = {
-                        Surface(
-                            modifier = Modifier.shadow(4.dp),
-                            color = MaterialTheme.colorScheme.onBackground,
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                text = "Remove friend",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.background,
-                                modifier = Modifier.padding(10.dp)
-                            )
-                        }
-                    }
+                Tooltipped(
+                    tooltip = "Remove friend"
                 ) {
                     IconButton(
                         onClick = onRemoveFriend
                     ) {
                         Icon(
-                            Icons.Default.Close,
-                            "Remove friend",
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Remove friend",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                         )
                     }

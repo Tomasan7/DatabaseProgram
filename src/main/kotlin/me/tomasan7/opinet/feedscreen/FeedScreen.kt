@@ -1,9 +1,10 @@
 package me.tomasan7.opinet.feedscreen
 
+import StackedSnackbarAnimation
+import StackedSnackbarDuration
 import StackedSnackbarHost
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,12 +17,10 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.outlined.TableView
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
@@ -33,7 +32,7 @@ import me.tomasan7.opinet.feedscreen.newpostscreen.NewPostScreen
 import me.tomasan7.opinet.friendscreen.FriendScreen
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.loginscreen.LoginScreen
-import me.tomasan7.opinet.managementscreen.ManagementScreen
+import me.tomasan7.opinet.ui.component.Tooltipped
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
 import rememberStackedSnackbarHostState
@@ -139,21 +138,8 @@ object FeedScreen : Screen
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                         ) {
-                            TooltipArea(
-                                tooltip = {
-                                    Surface(
-                                        modifier = Modifier.shadow(4.dp),
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        shape = RoundedCornerShape(4.dp)
-                                    ) {
-                                        Text(
-                                            text = "Friends",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.background,
-                                            modifier = Modifier.padding(10.dp)
-                                        )
-                                    }
-                                }
+                            Tooltipped(
+                                tooltip = "Friends"
                             ) {
                                 IconButton(
                                     onClick = { navigator push FriendScreen }
