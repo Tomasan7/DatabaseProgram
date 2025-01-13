@@ -27,6 +27,7 @@ import io.github.vinceglb.filekit.core.PickerType
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.ui.component.HorizontalSpacer
 import me.tomasan7.opinet.ui.component.ScreenTitle
+import me.tomasan7.opinet.ui.component.Tooltipped
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import rememberStackedSnackbarHostState
 import kotlin.io.path.Path
@@ -137,15 +138,15 @@ object ManagementScreen : Screen
                     style = MaterialTheme.typography.headlineMedium
                 )
                 VerticalSpacer(24.dp)
-                Button(
-                    onClick = { model.onImportUsersClicked() }
-                ) {
-                    Text("Import users")
+                Tooltipped("username,firstName,lastName,gender") {
+                    Button({ model.onImportUsersClicked() }) {
+                        Text("Import users")
+                    }
                 }
-                Button(
-                    onClick = { model.onImportPostsClicked() }
-                ) {
-                    Text("Import posts")
+                Tooltipped("authorUsername,uploadDate,title,content") {
+                    Button({ model.onImportPostsClicked() }) {
+                        Text("Import posts")
+                    }
                 }
                 VerticalSpacer(64.dp)
                 Text(
