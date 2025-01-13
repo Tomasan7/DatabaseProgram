@@ -18,9 +18,8 @@ class DatabaseFriendService(
         val f2 = FriendTable.alias("f2")
 
         return dbQuery {
-            f1.join(
+            f1.leftJoin(
                 otherTable = f2,
-                joinType = JoinType.LEFT,
                 additionalConstraint = {
                     (f1[FriendTable.requesterId] eq f2[FriendTable.targetId]) and
                             (f1[FriendTable.targetId] eq f2[FriendTable.requesterId])
@@ -42,9 +41,8 @@ class DatabaseFriendService(
         val f2 = FriendTable.alias("f2")
 
         return dbQuery {
-            f1.join(
+            f1.leftJoin(
                 otherTable = f2,
-                joinType = JoinType.LEFT,
                 additionalConstraint = {
                     (f1[FriendTable.requesterId] eq f2[FriendTable.targetId]) and
                             (f1[FriendTable.targetId] eq f2[FriendTable.requesterId])
@@ -74,9 +72,8 @@ class DatabaseFriendService(
         }
 
         return dbQuery {
-            f1.join(
+            f1.innerJoin(
                 otherTable = f2,
-                joinType = JoinType.INNER,
                 additionalConstraint = { (f1[FriendTable.requesterId] eq f2[FriendTable.targetId]) and (f1[FriendTable.targetId] eq f2[FriendTable.requesterId]) },
             ).select(caseExpression)
                 .withDistinct()
