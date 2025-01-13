@@ -1,11 +1,15 @@
 package me.tomasan7.opinet.post
 
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import me.tomasan7.opinet.comment.CommentService
+import me.tomasan7.opinet.friend.FriendTable
 import me.tomasan7.opinet.service.DatabaseService
 import me.tomasan7.opinet.vote.VoteService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import sun.tools.jconsole.Messages.IS
+import javax.swing.DropMode.ON
 
 class DatabasePostService(
     database: Database,
@@ -41,6 +45,58 @@ class DatabasePostService(
             .orderBy(PostTable.uploadDate to SortOrder.DESC)
             .map { it.toPostDto() }
             .toImmutableList()
+    }
+
+    override suspend fun getAllPostsVisibleToOrderedByUploadDateDesc(userId: Int): ImmutableList<PostDto>
+    {
+        val f1 = FriendTable.alias("f1")
+        val f2 = FriendTable.alias("f2")
+
+        return dbQuery {
+            PostTable.leftJoin(
+                otherTable = f1,
+                additionalConstraint = {
+                    (PostTable.authorId eq f1[FriendTable.requesterId]) and (f1[FriendTable.targetId] eq userId)
+                }
+            ).leftJoin(
+                otherTable = f2,
+                additionalConstraint = {
+                    (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.requesterId] eq userId)
+                }
+            ).selectAll()
+                .where {
+                    (PostTable.public eq true) or (f1[FriendTable.targetId] neq null) or (f2[FriendTable.requesterId] neq null)
+                }
+                .orderBy(PostTable.uploadDate to SortOrder.DESC)
+                .map { it.toPostDto() }
+                .toImmutableList()
+        }
+    }
+
+    override suspend fun getPrivatePostsVisibleToOrderedByUploadDateDesc(userId: Int): ImmutableList<PostDto>
+    {
+        val f1 = FriendTable.alias("f1")
+        val f2 = FriendTable.alias("f2")
+
+        return dbQuery {
+            PostTable.leftJoin(
+                otherTable = f1,
+                additionalConstraint = {
+                    (PostTable.authorId eq f1[FriendTable.requesterId]) and (f1[FriendTable.targetId] eq userId)
+                }
+            ).leftJoin(
+                otherTable = f2,
+                additionalConstraint = {
+                    (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.requesterId] eq userId)
+                }
+            ).selectAll()
+                .where {
+                    (f1[FriendTable.targetId] neq null) or (f2[FriendTable.requesterId] neq null)
+                }
+                .orderBy(PostTable.uploadDate to SortOrder.DESC)
+                .map { it.toPostDto() }
+                .toImmutableList()
+        }
     }
 
     override suspend fun getPostsByAuthorIdOrderedByUploadDateDesc(authorId: Int) = dbQuery {

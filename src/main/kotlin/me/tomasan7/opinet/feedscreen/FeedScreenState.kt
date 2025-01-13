@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.persistentListOf
 
 data class FeedScreenState(
     val posts: ImmutableList<Post> = persistentListOf(),
+    val tab: FeedScreenTab = FeedScreenTab.ALL,
     val commentsDialogState: CommentsDialogState = CommentsDialogState(),
     val errorText: String? = null,
     val editPostEvent: Post? = null

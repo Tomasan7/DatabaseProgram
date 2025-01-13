@@ -39,7 +39,12 @@ class FeedScreenModel(
         screenModelScope.launch {
             try
             {
-                val posts = postService.getAllPostsOrderedByUploadDateDesc().map { postDto ->
+                val postDtos =
+                    if (uiState.tab == FeedScreenTab.ALL) postService.getAllPostsVisibleToOrderedByUploadDateDesc(
+                        currentUser.id
+                    )
+                    else postService.getPrivatePostsVisibleToOrderedByUploadDateDesc(currentUser.id)
+                val posts = postDtos.map { postDto ->
                     val votesOnPost = voteService.getVotesOnPost(postDto.id!!)
                     val voted = votesOnPost.find { it.userId == currentUser.id }?.upDown
                     postDto.toPost(
@@ -76,6 +81,12 @@ class FeedScreenModel(
     fun editPostEventConsumed()
     {
         changeUiState(editPostEvent = null)
+    }
+
+    fun setTab(tab: FeedScreenTab)
+    {
+        changeUiState(tab = tab, posts = persistentListOf())
+        loadPosts()
     }
 
     fun deletePost(post: Post)
@@ -248,6 +259,7 @@ class FeedScreenModel(
 
     private fun changeUiState(
         posts: ImmutableList<Post> = uiState.posts,
+        tab: FeedScreenTab = uiState.tab,
         commentsDialogState: FeedScreenState.CommentsDialogState = uiState.commentsDialogState,
         errorText: String? = uiState.errorText,
         editPostEvent: Post? = uiState.editPostEvent
@@ -255,6 +267,7 @@ class FeedScreenModel(
     {
         uiState = uiState.copy(
             posts = posts,
+            tab = tab,
             commentsDialogState = commentsDialogState,
             errorText = errorText,
             editPostEvent = editPostEvent

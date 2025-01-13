@@ -32,6 +32,7 @@ import me.tomasan7.opinet.feedscreen.newpostscreen.NewPostScreen
 import me.tomasan7.opinet.friendscreen.FriendScreen
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.loginscreen.LoginScreen
+import me.tomasan7.opinet.ui.component.ScreenTitle
 import me.tomasan7.opinet.ui.component.Tooltipped
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
@@ -41,7 +42,7 @@ object FeedScreen : Screen
 {
     private fun readResolve(): Any = FeedScreen
 
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
     @Composable
     override fun Content()
     {
@@ -125,32 +126,49 @@ object FeedScreen : Screen
                     Box(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = "Posts feed",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.headlineMedium,
+                        ScreenTitle(
+                            title = "Posts feed",
                             modifier = Modifier
                                 .padding(bottom = 16.dp)
                                 .align(Alignment.Center)
                         )
                         Row(
-                            horizontalArrangement = Arrangement.End,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
-                                .align(Alignment.CenterEnd)
+                                .fillMaxWidth()
                         ) {
-                            Tooltipped("Friends") {
-                                IconButton({ navigator push FriendScreen }) {
-                                    Icon(Icons.Default.Group, "Friends")
-                                }
+
+                            SecondaryTabRow(
+                                selectedTabIndex = uiState.tab.ordinal,
+                                modifier = Modifier.width(200.dp)
+                            ) {
+                                Tab(
+                                    selected = uiState.tab == FeedScreenTab.ALL,
+                                    onClick = { model.setTab(FeedScreenTab.ALL) },
+                                    text = { Text("All") }
+                                )
+                                Tab(
+                                    selected = uiState.tab == FeedScreenTab.FRIENDS,
+                                    onClick = { model.setTab(FeedScreenTab.FRIENDS) },
+                                    text = { Text("Friends") }
+                                )
                             }
 
-                            LoggedUser(
-                                user = currentUser,
-                                onLogout = {
-                                    opiNet.logout()
-                                    navigator.popUntil { it is LoginScreen }
+                            Row {
+                                Tooltipped("Friends") {
+                                    IconButton({ navigator push FriendScreen }) {
+                                        Icon(Icons.Default.Group, "Friends")
+                                    }
                                 }
-                            )
+
+                                LoggedUser(
+                                    user = currentUser,
+                                    onLogout = {
+                                        opiNet.logout()
+                                        navigator.popUntil { it is LoginScreen }
+                                    }
+                                )
+                            }
                         }
                     }
 
