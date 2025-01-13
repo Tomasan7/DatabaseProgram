@@ -30,6 +30,7 @@ import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.managementscreen.ManagementScreen
 import me.tomasan7.opinet.registerscreen.RegisterScreen
 import me.tomasan7.opinet.ui.component.PasswordTextField
+import me.tomasan7.opinet.ui.component.ScreenTitle
 import me.tomasan7.opinet.ui.component.Tooltipped
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.util.AppThemePreviewer
@@ -83,11 +84,7 @@ object LoginScreen : Screen
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "Login",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    ScreenTitle("Login")
                     VerticalSpacer(16.dp)
                     TextField(
                         value = uiState.username,

@@ -26,6 +26,7 @@ import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.ui.component.HorizontalSpacer
+import me.tomasan7.opinet.ui.component.ScreenTitle
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import rememberStackedSnackbarHostState
 import kotlin.io.path.Path
@@ -126,20 +127,10 @@ object ManagementScreen : Screen
                     .padding(innerPadding)
                     .fillMaxWidth()
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = { navigator.pop() }
-                    ) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
-                    }
-
-                    Text(
-                        text = "Management",
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                }
+                ScreenTitle(
+                    title = "Management",
+                    onBackClick = { navigator.pop() }
+                )
                 VerticalSpacer(64.dp)
                 Text(
                     text = "Import",

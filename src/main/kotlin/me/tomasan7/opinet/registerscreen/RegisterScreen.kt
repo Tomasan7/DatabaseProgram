@@ -19,6 +19,7 @@ import me.tomasan7.opinet.loginscreen.LoginScreen
 import me.tomasan7.opinet.ui.component.DropDownSelector
 import me.tomasan7.opinet.ui.component.FilledDropDownSelector
 import me.tomasan7.opinet.ui.component.PasswordTextField
+import me.tomasan7.opinet.ui.component.ScreenTitle
 import me.tomasan7.opinet.ui.component.VerticalSpacer
 import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.util.AppThemePreviewer
@@ -54,11 +55,7 @@ data class RegisterScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "Register",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            ScreenTitle("Register")
             VerticalSpacer(16.dp)
             TextField(
                 value = uiState.username,

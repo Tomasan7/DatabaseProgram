@@ -28,6 +28,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import me.tomasan7.opinet.getOpiNet
+import me.tomasan7.opinet.ui.component.ScreenTitle
 import me.tomasan7.opinet.ui.component.Tooltipped
 import me.tomasan7.opinet.user.UserDto
 import rememberStackedSnackbarHostState
@@ -64,24 +65,10 @@ object FriendScreen : Screen
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = { navigator.pop() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            contentDescription = "Back",
-                        )
-                    }
-                    Text(
-                        text = "Friends",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                }
+                ScreenTitle(
+                    title = "Friends",
+                    onBackClick = { navigator.pop() }
+                )
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
