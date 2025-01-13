@@ -135,9 +135,7 @@ object LoginScreen : Screen
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                 ) {
-                    IconButton(
-                        onClick = { navigator push ManagementScreen }
-                    ) {
+                    IconButton({ navigator push ManagementScreen }) {
                         Icon(Icons.Outlined.TableView, contentDescription = "management")
                     }
                 }

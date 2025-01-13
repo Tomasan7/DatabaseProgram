@@ -232,12 +232,8 @@ object FriendScreen : Screen
             ) {
                 Text(text = friend.firstName + " " + friend.lastName)
 
-                Tooltipped(
-                    tooltip = "Remove friend"
-                ) {
-                    IconButton(
-                        onClick = onRemoveFriend
-                    ) {
+                Tooltipped("Remove friend") {
+                    IconButton(onRemoveFriend) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Remove friend",

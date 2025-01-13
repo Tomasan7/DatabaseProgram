@@ -138,12 +138,8 @@ object FeedScreen : Screen
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                         ) {
-                            Tooltipped(
-                                tooltip = "Friends"
-                            ) {
-                                IconButton(
-                                    onClick = { navigator push FriendScreen }
-                                ) {
+                            Tooltipped("Friends") {
+                                IconButton({ navigator push FriendScreen }) {
                                     Icon(Icons.Default.Group, "Friends")
                                 }
                             }
