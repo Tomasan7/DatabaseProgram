@@ -154,7 +154,11 @@ object FeedScreen : Screen
                         }
                     }
 
-                    uiState.posts.forEach { post ->
+                    val postsOrdered by derivedStateOf {
+                        uiState.posts.sortedByDescending { it.uploadDate }
+                    }
+
+                    postsOrdered.forEach { post ->
                         key(post.id) {
                             Post(
                                 post = post,
