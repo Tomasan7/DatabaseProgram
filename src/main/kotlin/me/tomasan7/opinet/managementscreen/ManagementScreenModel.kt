@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import com.github.doyaaaaaken.kotlincsv.util.CSVFieldNumDifferentException
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import io.github.vinceglb.filekit.core.PlatformFile
 import kotlinx.coroutines.CancellationException
@@ -73,14 +74,13 @@ class ManagementScreenModel(
         screenModelScope.launch {
             var importedUsersCount = 0
             for (path in files)
-                csvReader {
-                    delimiter = importConfig.csvDelimiter
-                }.openAsync(path) {
-                    readAllAsSequence().forEach { fields ->
+                try
+                {
+                    readCsvSequence(path) { fields ->
                         if (fields.size != 5)
                         {
-                            logger.warn { "IMPORT: Skipped line because it had ${fields.size} fields instead of 3" }
-                            return@forEach
+                            logger.warn { "IMPORT: Skipped line because it had ${fields.size} fields instead of 5" }
+                            throw CSVFieldNumDifferentException(5, -1, fields.size)
                         }
 
                         val (username, firstName, lastName, password, genderStr) = fields
@@ -110,9 +110,16 @@ class ManagementScreenModel(
                             logger.error { "IMPORT: $username - $firstName $lastName was not imported. (${e.message})" }
                         }
                     }
+                    changeUiState(usersImportResult = importedUsersCount)
                 }
-
-            changeUiState(usersImportResult = importedUsersCount)
+                catch (e: CancellationException)
+                {
+                    throw e
+                }
+                catch (e: Exception)
+                {
+                    changeUiState(errorText = Messages.incorrectFormat.format(getUsersFormatString()))
+                }
         }
     }
 
@@ -203,23 +210,19 @@ class ManagementScreenModel(
         screenModelScope.launch {
             var importedPostsCount = 0
             for (path in paths)
-                csvReader {
-                    delimiter = importConfig.csvDelimiter
-                }.openAsync(path) {
-                    readAllAsSequence().forEach { fields ->
+                try
+                {
+                    readCsvSequence(path) { fields ->
                         if (fields.size != 4)
                         {
                             logger.info { "IMPORT: Post was not imported, because it has ${fields.size} fields instead of 4" }
-                            return@forEach
+                            throw CSVFieldNumDifferentException(5, -1, fields.size)
                         }
 
                         val (authorUsername, uploadDateStr, title, content) = fields
 
                         if (authorUsername.isBlank() || uploadDateStr.isBlank() || title.isBlank() || content.isBlank())
-                        {
-                            logger.info { "IMPORT: Post was not imported, because it has empty fields" }
-                            return@forEach
-                        }
+                            return@readCsvSequence logger.info { "IMPORT: Post was not imported, because it has empty fields" }
 
                         val uploadDate = try
                         {
@@ -228,22 +231,16 @@ class ManagementScreenModel(
                         catch (e: Exception)
                         {
                             logger.info { "IMPORT: Post was not imported, because it has an invalid upload date format. dd.MM.yyyy is expected." }
-                            return@forEach
+                            return@readCsvSequence
                         }
 
                         if (uploadDate > LocalDate.now())
-                        {
-                            logger.info { "IMPORT: Post was not imported, because it has an upload date in the future" }
-                            return@forEach
-                        }
+                            return@readCsvSequence logger.info { "IMPORT: Post was not imported, because it has an upload date in the future" }
 
                         val author = userService.getUserByUsername(authorUsername)
 
                         if (author == null)
-                        {
-                            logger.info { "IMPORT: Post was not imported, because user '$authorUsername' does not exist" }
-                            return@forEach
-                        }
+                            return@readCsvSequence logger.info { "IMPORT: Post was not imported, because user '$authorUsername' does not exist" }
 
                         val postDto = PostDto(
                             title = title,
@@ -267,10 +264,49 @@ class ManagementScreenModel(
                             logger.error { "IMPORT: Post titled '$title' was not imported. (${e.message})" }
                         }
                     }
+                    changeUiState(postsImportResult = importedPostsCount)
                 }
-
-            changeUiState(postsImportResult = importedPostsCount)
+                catch (e: Exception)
+                {
+                    if (e is CancellationException)
+                        throw e
+                    else
+                        changeUiState(errorText = Messages.incorrectFormat.format(getPostsFormatString()))
+                }
         }
+    }
+
+    private suspend fun readCsvSequence(
+        path: String,
+        action: suspend (List<String>) -> Unit
+    )
+    {
+        csvReader {
+            delimiter = importConfig.csvDelimiter
+        }.openAsync(path) {
+            readAllAsSequence().forEach { action(it) }
+        }
+    }
+
+    fun getPostsFormatString(): String
+    {
+        return listOf(
+            "authorName",
+            "uploadDate(${importConfig.dateFormat})",
+            "title",
+            "content"
+        ).joinToString(separator = importConfig.csvDelimiter.toString())
+    }
+
+    fun getUsersFormatString(): String
+    {
+        return listOf(
+            "username",
+            "firstName",
+            "lastName",
+            "password",
+            "gender"
+        ).joinToString(separator = importConfig.csvDelimiter.toString())
     }
 
     fun onErrorConsumed()

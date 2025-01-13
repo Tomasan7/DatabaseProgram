@@ -55,9 +55,7 @@ object ManagementScreen : Screen
                 val paths = files.map { it.path!! }
 
                 if (uiState.importUsers)
-                {
                     model.onImportUsersFilesChosen(paths)
-                }
                 else if (uiState.importPosts)
                     model.onImportPostsFilesChosen(paths)
             }
@@ -138,12 +136,12 @@ object ManagementScreen : Screen
                     style = MaterialTheme.typography.headlineMedium
                 )
                 VerticalSpacer(24.dp)
-                Tooltipped("username,firstName,lastName,gender") {
+                Tooltipped(model.getUsersFormatString()) {
                     Button({ model.onImportUsersClicked() }) {
                         Text("Import users")
                     }
                 }
-                Tooltipped("authorUsername,uploadDate,title,content") {
+                Tooltipped(model.getPostsFormatString()) {
                     Button({ model.onImportPostsClicked() }) {
                         Text("Import posts")
                     }
