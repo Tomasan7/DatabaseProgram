@@ -13,7 +13,6 @@ data class Config(
 {
     data class Database(
         val url: String,
-        val driver: String,
         val user: String,
         val password: Masked
     )

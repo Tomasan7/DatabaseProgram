@@ -30,7 +30,6 @@ class IsolationLevels
     val database = config.database.let { dbConf ->
         Database.connect(
             url = dbConf.url,
-            driver = dbConf.driver,
             user = dbConf.user,
             password = dbConf.password.value,
         )
