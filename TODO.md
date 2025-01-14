@@ -2,4 +2,3 @@
 - Handle errors better
 - Optimize queries (limit 1)
 - Add logging
-- Implement remove friend
