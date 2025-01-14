@@ -47,7 +47,7 @@ object ManagementScreen : Screen
 
         val importFilePicker = rememberFilePickerLauncher(
             type = PickerType.File(listOf("csv")),
-            initialDirectory = Path(".").absolute().toString(),
+            initialDirectory = System.getProperty("user.dir"),
             mode = PickerMode.Multiple(maxItems = 10)
         ) { files ->
             if (files != null)
@@ -78,7 +78,7 @@ object ManagementScreen : Screen
         LaunchedEffect(uiState.exportTotalReportBytes) {
             if (uiState.exportTotalReportBytes != null)
                 reportExportFilePicker.launch(
-                    initialDirectory = Path(".").absolute().toString(),
+                    initialDirectory = System.getProperty("user.dir"),
                     baseName = "total_report",
                     extension = "json",
                     bytes = uiState.exportTotalReportBytes
