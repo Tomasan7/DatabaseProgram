@@ -7,6 +7,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.collections.immutable.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -33,10 +34,12 @@ class FeedScreenModel(
         private set
 
     private val cachedUsers = mutableMapOf<Int, User>(currentUser.id to currentUser)
+    private var loadJob: Job? = null
 
     fun loadPosts()
     {
-        screenModelScope.launch {
+        loadJob?.cancel()
+        loadJob = screenModelScope.launch {
             try
             {
                 val postDtos =
