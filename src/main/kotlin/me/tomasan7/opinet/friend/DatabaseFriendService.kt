@@ -35,6 +35,16 @@ class DatabaseFriendService(
         }
     }
 
+    override suspend fun removeFriendship(userId1: Int, userId2: Int)
+    {
+        return dbQuery {
+            FriendTable.deleteWhere {
+                ((FriendTable.requesterId eq userId1) and (FriendTable.targetId eq userId2)) or
+                        ((FriendTable.requesterId eq userId2) and (FriendTable.targetId eq userId1))
+            }
+        }
+    }
+
     override suspend fun getOutgoingRequestsFrom(userId: Int): List<UserDto>
     {
         val f1 = FriendTable.alias("f1")

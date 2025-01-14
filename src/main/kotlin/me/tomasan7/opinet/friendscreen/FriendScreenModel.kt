@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.sksamuel.hoplite.transformer.PathNormalizer.transform
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -16,6 +17,7 @@ import me.tomasan7.opinet.friend.FriendService
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.util.isNetworkError
+import me.tomasan7.opinet.util.replace
 
 class FriendScreenModel(
     private val friendService: FriendService,
@@ -53,9 +55,31 @@ class FriendScreenModel(
         }
     }
 
+    private fun List<MaybeFriend>.update(userId: Int, update: (MaybeFriend) -> MaybeFriend) = this.map {
+        if (it.user.id == userId)
+            update(it)
+        else
+            it
+    }
+
     fun removeFriend(friend: UserDto)
     {
-        TODO("Not yet implemented")
+        screenModelScope.launch {
+            try
+            {
+                friendService.removeFriendship(currentUser.id!!, friend.id!!)
+                changeUiState(users = uiState.users.update(friend.id) { it.copy(isFriend = false) })
+            }
+            catch (e: Exception)
+            {
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
+            }
+        }
     }
 
     fun acceptRequest(user: UserDto)
@@ -64,7 +88,7 @@ class FriendScreenModel(
             try
             {
                 friendService.acceptRequest(user.id!!, currentUser.id!!)
-                loadFriends()
+                changeUiState(users = uiState.users.update(user.id) { it.copy(incomingRequest = false, isFriend = true) })
             }
             catch (e: Exception)
             {
@@ -84,7 +108,7 @@ class FriendScreenModel(
             try
             {
                 friendService.rejectRequest(user.id!!, currentUser.id!!)
-                loadFriends()
+                changeUiState(users = uiState.users.update(user.id) { it.copy(incomingRequest = false) })
             }
             catch (e: Exception)
             {

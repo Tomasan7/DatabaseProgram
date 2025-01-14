@@ -13,6 +13,8 @@ interface FriendService
     /** Returns friends of [userId]. */
     suspend fun getFriendsOf(userId: Int): List<UserDto>
 
+    suspend fun removeFriendship(userId1: Int, userId2: Int)
+
     suspend fun requestFriendship(requesterUserId: Int, targetUserId: Int)
 
     suspend fun acceptRequest(requesterUserId: Int, targetUserId: Int)
