@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.ExtendedFloatingActionButton
-import androidx.compose.material.Icon
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
@@ -172,18 +173,23 @@ object FeedScreen : Screen
                         }
                     }
 
-                    uiState.posts.forEach { post ->
-                        key(post.id) {
-                            Post(
-                                post = post,
-                                owned = opiNet.currentUser!!.id == post.author.id,
-                                onEditClick = { model.editPost(post) },
-                                onDeleteClick = { model.deletePost(post) },
-                                onVote = { model.voteOnPost(post, it) },
-                                onCommentClick = { model.openComments(post.id) }
-                            )
+                    if (uiState.loading)
+                        CircularProgressIndicator()
+                    if (!uiState.loading && uiState.posts.isEmpty())
+                        Text("No posts to show")
+                    else
+                        uiState.posts.forEach { post ->
+                            key(post.id) {
+                                Post(
+                                    post = post,
+                                    owned = opiNet.currentUser!!.id == post.author.id,
+                                    onEditClick = { model.editPost(post) },
+                                    onDeleteClick = { model.deletePost(post) },
+                                    onVote = { model.voteOnPost(post, it) },
+                                    onCommentClick = { model.openComments(post.id) }
+                                )
+                            }
                         }
-                    }
                     VerticalSpacer(100.dp)
                 }
             }

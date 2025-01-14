@@ -39,6 +39,7 @@ class FeedScreenModel(
     fun loadPosts()
     {
         loadJob?.cancel()
+        changeUiState(loading = true)
         loadJob = screenModelScope.launch {
             try
             {
@@ -57,7 +58,7 @@ class FeedScreenModel(
                         votesGetter = { votesOnPost.count { it.upDown } to votesOnPost.count { !it.upDown } }
                     )
                 }.toImmutableList()
-                changeUiState(posts = posts)
+                changeUiState(posts = posts, loading = false)
             }
             catch (e: Exception)
             {
@@ -262,6 +263,7 @@ class FeedScreenModel(
 
     private fun changeUiState(
         posts: ImmutableList<Post> = uiState.posts,
+        loading: Boolean = uiState.loading,
         tab: FeedScreenTab = uiState.tab,
         commentsDialogState: FeedScreenState.CommentsDialogState = uiState.commentsDialogState,
         errorText: String? = uiState.errorText,
@@ -270,6 +272,7 @@ class FeedScreenModel(
     {
         uiState = uiState.copy(
             posts = posts,
+            loading = loading,
             tab = tab,
             commentsDialogState = commentsDialogState,
             errorText = errorText,
