@@ -2,12 +2,14 @@ package me.tomasan7.opinet.post
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.Clock
 import me.tomasan7.opinet.comment.CommentService
 import me.tomasan7.opinet.friend.FriendTable
 import me.tomasan7.opinet.service.DatabaseService
 import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.user.UserTable
 import me.tomasan7.opinet.vote.VoteService
+import me.tomasan7.opinet.vote.VoteTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -26,13 +28,20 @@ class DatabasePostService(
             throw IllegalArgumentException("Post id must be null when creating a new post")
 
         return dbQuery {
-            PostTable.insertAndGetId {
+            val postId = PostTable.insertAndGetId {
                 it[title] = postDto.title
                 it[public] = postDto.public
                 it[content] = postDto.content
                 it[uploadDate] = postDto.uploadDate
                 it[authorId] = postDto.authorId
             }.value
+            VoteTable.insert {
+                it[VoteTable.postId] = postId
+                it[VoteTable.userId] = postDto.authorId
+                it[VoteTable.upDown] = true
+                it[VoteTable.votedAt] = Clock.System.now().epochSeconds.toUInt()
+            }
+            postId
         }
     }
 
