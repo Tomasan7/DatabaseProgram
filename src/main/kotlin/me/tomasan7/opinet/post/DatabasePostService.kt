@@ -5,9 +5,12 @@ import kotlinx.collections.immutable.toImmutableList
 import me.tomasan7.opinet.comment.CommentService
 import me.tomasan7.opinet.friend.FriendTable
 import me.tomasan7.opinet.service.DatabaseService
+import me.tomasan7.opinet.user.Gender
+import me.tomasan7.opinet.user.UserTable
 import me.tomasan7.opinet.vote.VoteService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.transactions.transaction
 import sun.tools.jconsole.Messages.IS
 import javax.swing.DropMode.ON
 
@@ -55,17 +58,15 @@ class DatabasePostService(
         return dbQuery {
             PostTable.leftJoin(
                 otherTable = f1,
-                additionalConstraint = {
-                    (PostTable.authorId eq f1[FriendTable.requesterId]) and (f1[FriendTable.targetId] eq userId)
-                }
+                additionalConstraint = { PostTable.authorId eq f1[FriendTable.requesterId] }
             ).leftJoin(
                 otherTable = f2,
-                additionalConstraint = {
-                    (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.requesterId] eq userId)
-                }
+                additionalConstraint = { (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.targetId] eq f2[FriendTable.requesterId]) }
             ).selectAll()
                 .where {
-                    (PostTable.public eq true) or (f1[FriendTable.targetId] neq null) or (f2[FriendTable.requesterId] neq null)
+                    (PostTable.public eq true) or
+                            ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
+                            ((f1[FriendTable.targetId] eq userId) and (f2[FriendTable.requesterId] eq userId))
                 }
                 .orderBy(PostTable.uploadDate to SortOrder.DESC)
                 .map { it.toPostDto() }
@@ -78,20 +79,18 @@ class DatabasePostService(
         val f1 = FriendTable.alias("f1")
         val f2 = FriendTable.alias("f2")
 
+        // TODO: DRY: these two (getXPosts..) selects are the same except public check
         return dbQuery {
             PostTable.leftJoin(
                 otherTable = f1,
-                additionalConstraint = {
-                    (PostTable.authorId eq f1[FriendTable.requesterId]) and (f1[FriendTable.targetId] eq userId)
-                }
+                additionalConstraint = { PostTable.authorId eq f1[FriendTable.requesterId] }
             ).leftJoin(
                 otherTable = f2,
-                additionalConstraint = {
-                    (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.requesterId] eq userId)
-                }
+                additionalConstraint = { (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.targetId] eq f2[FriendTable.requesterId]) }
             ).selectAll()
                 .where {
-                    (f1[FriendTable.targetId] neq null) or (f2[FriendTable.requesterId] neq null)
+                    ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
+                            ((f1[FriendTable.targetId] eq userId) and (f2[FriendTable.requesterId] eq userId))
                 }
                 .orderBy(PostTable.uploadDate to SortOrder.DESC)
                 .map { it.toPostDto() }
