@@ -8,6 +8,4 @@
     <root level="debug">
         <appender-ref ref="STDOUT" />
     </root>
-
-    <logger name="Exposed" level="off" />
 </configuration>
