@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -126,7 +125,7 @@ object FriendScreen : Screen
             )
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.width(IntrinsicSize.Max)
             ) {
                 incomingRequests.forEach {
@@ -221,6 +220,7 @@ object FriendScreen : Screen
     {
         Surface(
             tonalElevation = 4.dp,
+            shape = RoundedCornerShape(8.dp),
             modifier = modifier
         ) {
             Row(
