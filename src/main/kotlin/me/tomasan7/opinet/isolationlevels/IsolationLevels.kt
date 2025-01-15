@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
+import ch.qos.logback.classic.Level
 import me.tomasan7.opinet.config.FileConfigProvider
 import me.tomasan7.opinet.config.IsolationLevel
 import me.tomasan7.opinet.ui.component.FilledDropDownSelector
@@ -22,6 +23,8 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class IsolationLevels
 {
@@ -47,6 +50,8 @@ class IsolationLevels
 
     init
     {
+        val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
+        rootLogger.level = Level.toLevel(config.logLevel, Level.INFO)
         isolationLevel = config.isolationLevel
         TransactionManager.defaultDatabase = database
         transaction {
