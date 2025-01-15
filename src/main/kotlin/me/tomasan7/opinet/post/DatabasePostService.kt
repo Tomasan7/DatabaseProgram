@@ -72,7 +72,7 @@ class DatabasePostService(
                 otherTable = f2,
                 additionalConstraint = { (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.targetId] eq f2[FriendTable.requesterId]) }
             ).selectAll()
-                .withDistinctOn(PostTable.id)
+                .withDistinct()
                 .where {
                     (PostTable.public eq true) or
                             ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
@@ -98,7 +98,7 @@ class DatabasePostService(
                 otherTable = f2,
                 additionalConstraint = { (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.targetId] eq f2[FriendTable.requesterId]) }
             ).selectAll()
-                .withDistinctOn(PostTable.id)
+                .withDistinct()
                 .where {
                     ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
                             ((f1[FriendTable.targetId] eq userId) and (f2[FriendTable.requesterId] eq userId))
