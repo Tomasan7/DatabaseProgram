@@ -1,8 +1,8 @@
-package me.tomasan7.opinet.votes
+package me.tomasan7.opinet.vote
 
 import kotlinx.collections.immutable.ImmutableList
 
-interface VotesService
+interface VoteService
 {
     /**
      * Creates a vote for a post.

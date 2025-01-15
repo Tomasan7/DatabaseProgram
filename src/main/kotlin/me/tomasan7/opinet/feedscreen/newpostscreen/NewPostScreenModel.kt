@@ -5,37 +5,32 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.feedscreen.Post
 import me.tomasan7.opinet.feedscreen.User
 import me.tomasan7.opinet.post.PostDto
 import me.tomasan7.opinet.post.PostService
 import me.tomasan7.opinet.user.UserService
-import me.tomasan7.opinet.util.now
-import me.tomasan7.opinet.util.parseLocalDate
-import java.time.format.DateTimeFormatter
-
-private val logger = KotlinLogging.logger {}
+import me.tomasan7.opinet.util.isNetworkError
 
 class NewPostScreenModel(
     private val postService: PostService,
-    private val userService: UserService,
     private val currentUser: User,
     private val editingPost: Post?,
-    private val importConfig: Config.Import
 ) : ScreenModel
 {
     var uiState by mutableStateOf(NewPostScreenState(
         isEditing = editingPost != null,
         title = editingPost?.title ?: "",
-        content = editingPost?.content ?: ""
+        content = editingPost?.content ?: "",
+        public = editingPost?.public == true
     ))
         private set
 
@@ -44,6 +39,10 @@ class NewPostScreenModel(
     fun setContent(content: String) = changeUiState(content = content)
 
     fun goBackToFeedEventConsumed() = changeUiState(goBackToFeedEvent = false)
+
+    fun setPublic(value: Boolean) = changeUiState(public = value)
+
+    fun errorEventConsumed() = changeUiState(errorText = null)
 
     fun submit()
     {
@@ -55,10 +54,22 @@ class NewPostScreenModel(
 
     private fun submitPost()
     {
+        if (uiState.title.isBlank())
+        {
+            changeUiState(errorText = "Title cannot be blank")
+            return
+        }
+        else if (uiState.content.isBlank())
+        {
+            changeUiState(errorText = "Content cannot be blank")
+            return
+        }
+
         val postDto = PostDto(
             title = uiState.title,
             content = uiState.content,
             uploadDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
+            public = uiState.public,
             authorId = currentUser.id
         )
 
@@ -70,7 +81,12 @@ class NewPostScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -81,6 +97,7 @@ class NewPostScreenModel(
             id = editingPost!!.id,
             title = uiState.title,
             content = uiState.content,
+            public = uiState.public,
             uploadDate = editingPost.uploadDate,
             authorId = editingPost.author.id
         )
@@ -98,99 +115,20 @@ class NewPostScreenModel(
         }
     }
 
-    fun onImportClick() = changeUiState(filePickerOpen = true)
-
-    fun closeImportFilePicker() = changeUiState(filePickerOpen = false)
-
-    fun onImportFileChosen(path: String)
-    {
-        val dateFormatter = try
-        {
-            DateTimeFormatter.ofPattern(importConfig.dateFormat)
-        }
-        catch (e: IllegalArgumentException)
-        {
-            logger.warn { "IMPORT: Configured date format is not valid (${importConfig.dateFormat}), aborting import..." }
-            return
-        }
-
-        screenModelScope.launch {
-            csvReader {
-                delimiter = importConfig.csvDelimiter
-            }.openAsync(path) {
-                readAllAsSequence().forEach { fields ->
-                    if (fields.size != 4)
-                    {
-                        logger.info { "IMPORT: Post was not imported, because it has ${fields.size} fields instead of 4" }
-                        return@forEach
-                    }
-
-                    val (authorUsername, uploadDateStr, title, content) = fields
-
-                    if (authorUsername.isBlank() || uploadDateStr.isBlank() || title.isBlank() || content.isBlank())
-                    {
-                        logger.info { "IMPORT: Post was not imported, because it has empty fields" }
-                        return@forEach
-                    }
-
-                    val uploadDate = try
-                    {
-                        uploadDateStr.parseLocalDate(dateFormatter)
-                    }
-                    catch (e: Exception)
-                    {
-                        logger.info { "IMPORT: Post was not imported, because it has an invalid upload date format. dd.MM.yyyy is expected." }
-                        println(e)
-                        return@forEach
-                    }
-
-                    if (uploadDate > LocalDate.now())
-                    {
-                        logger.info { "IMPORT: Post was not imported, because it has an upload date in the future" }
-                        return@forEach
-                    }
-
-                    val author = userService.getUserByUsername(authorUsername)
-
-                    if (author == null)
-                    {
-                        logger.info { "IMPORT: Post was not imported, because user '$authorUsername' does not exist" }
-                        return@forEach
-                    }
-
-                    val postDto = PostDto(
-                        title = title,
-                        content = content,
-                        uploadDate = uploadDate,
-                        authorId = author.id!!
-                    )
-
-                    try
-                    {
-                        postService.createPost(postDto)
-                        logger.info { "IMPORT: Imported post titled '$title' by $authorUsername uploaded at $uploadDate" }
-                    }
-                    catch (e: Exception)
-                    {
-                        logger.error { "IMPORT: Post titled '$title' was not imported. (${e.message})" }
-                    }
-                }
-            }
-        }
-    }
-
     private fun changeUiState(
         title: String = uiState.title,
         content: String = uiState.content,
+        public: Boolean = uiState.public,
         goBackToFeedEvent: Boolean = uiState.goBackToFeedEvent,
-        filePickerOpen: Boolean = uiState.filePickerOpen
+        errorText: String? = uiState.errorText
     )
     {
         uiState = uiState.copy(
             title = title,
+            public = public,
             content = content,
             goBackToFeedEvent = goBackToFeedEvent,
-            filePickerOpen = filePickerOpen
+            errorText = errorText
         )
     }
 }

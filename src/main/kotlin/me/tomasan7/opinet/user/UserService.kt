@@ -14,6 +14,8 @@ interface UserService
     /** Returns a [user][UserDto] with [id]. Or `null` if not found. */
     suspend fun getUserById(id: Int): UserDto?
 
+    suspend fun getAllUsers(): List<UserDto>
+
     /** Returns a [user][UserDto] with [username]. Or `null` if not found. */
     suspend fun getUserByUsername(username: String): UserDto?
 

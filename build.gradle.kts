@@ -4,6 +4,9 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.compose)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.shadow)
 }
 
 group = "me.tomasan7"
@@ -32,6 +35,7 @@ dependencies {
     implementation(libs.exposed.kotlin.datetime)
     runtimeOnly(libs.h2)
     runtimeOnly(libs.mssql.jdbc)
+    implementation(libs.mysql.connector.j)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.hocon)
     implementation(libs.logback.classic)
@@ -41,20 +45,23 @@ dependencies {
     implementation(compose.materialIconsExtended)
     implementation(libs.compose.previewer)
     implementation(libs.voyager.navigator)
+    implementation(libs.voyager.tab.navigator)
     implementation(libs.voyager.screenModel)
     //implementation(libs.humanReadable)
     implementation(libs.compose.file.picker)
-
+    implementation(libs.filekit.core)
+    implementation(libs.filekit.compose)
+    implementation(libs.compose.stacked.snackbar)
     //implementation(libs.diglolCrypto.kdf)
     implementation(libs.diglolCrypto.hash)
 
     implementation(libs.kotlinCsv.jvm)
+    implementation(libs.kotlinx.serialization.json)
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
-
 compose.desktop {
     application {
         mainClass = "me.tomasan7.opinet.MainKt"
@@ -64,6 +71,13 @@ compose.desktop {
             packageName = "OpiNet"
             packageVersion = version.toString()
         }
+    }
+}
+
+tasks.shadowJar {
+    manifest {
+        attributes["Main-Class"] = "me.tomasan7.opinet.MainKt"
+        archiveClassifier = "executable"
     }
 }
 

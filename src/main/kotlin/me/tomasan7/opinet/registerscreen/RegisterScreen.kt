@@ -3,23 +3,25 @@ package me.tomasan7.opinet.registerscreen
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alexfacciorusso.previewer.PreviewTheme
-import com.darkrockstudios.libraries.mpfilepicker.FilePicker
 import me.tomasan7.opinet.feedscreen.FeedScreen
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.loginscreen.LoginScreen
+import me.tomasan7.opinet.ui.component.DropDownSelector
+import me.tomasan7.opinet.ui.component.FilledDropDownSelector
 import me.tomasan7.opinet.ui.component.PasswordTextField
+import me.tomasan7.opinet.ui.component.ScreenTitle
 import me.tomasan7.opinet.ui.component.VerticalSpacer
+import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.util.AppThemePreviewer
 
 
@@ -39,8 +41,7 @@ data class RegisterScreen(
                 username,
                 password,
                 opiNet.userService,
-                opiNet,
-                opiNet.getConfig().import
+                opiNet
             )
         }
         val uiState = model.uiState
@@ -51,21 +52,10 @@ data class RegisterScreen(
             navigator push FeedScreen
         }
 
-        FilePicker(uiState.filePickerOpen, fileExtensions = listOf("csv")) { mpFile ->
-            if (mpFile == null)
-                model.closeImportFilePicker()
-            else
-                model.onImportFileChosen(mpFile.path)
-        }
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "Register",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            ScreenTitle("Register")
             VerticalSpacer(16.dp)
             TextField(
                 value = uiState.username,
@@ -85,6 +75,14 @@ data class RegisterScreen(
                 onValueChange = { model.setLastName(it) },
                 label = { Text("Last name") }
             )
+
+            FilledDropDownSelector(
+                items = Gender.entries,
+                selectedItem = uiState.gender,
+                itemStringMap = { it.toString().replace("_", "-").lowercase().replaceFirstChar { it.uppercase() } },
+                onChange = { model.setGender(it) }
+            )
+
             PasswordTextField(
                 password = uiState.password,
                 onPasswordChange = { model.setPassword(it) },
@@ -111,23 +109,6 @@ data class RegisterScreen(
                     text = "Go back to login",
                     style = MaterialTheme.typography.labelMedium
                 )
-            }
-            TooltipBox(
-                tooltip = {
-                    PlainTooltip {
-                        Text("Import users from CSV file")
-                    }
-                },
-                state = rememberTooltipState(),
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider()
-            ) {
-                IconButton({ model.onImportClick() }) {
-                    Icon(
-                        imageVector = Icons.Default.Download,
-                        contentDescription = "Import users",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
             }
         }
     }

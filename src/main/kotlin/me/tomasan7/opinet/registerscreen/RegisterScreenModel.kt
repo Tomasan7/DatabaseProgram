@@ -8,8 +8,10 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.OpiNet
 import me.tomasan7.opinet.config.Config
+import me.tomasan7.opinet.user.Gender
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.user.UsernameAlreadyExistsException
@@ -21,8 +23,7 @@ class RegisterScreenModel(
     username: String = "",
     password: String = "",
     private val userService: UserService,
-    private val opiNet: OpiNet,
-    private val importConfig: Config.Import
+    private val opiNet: OpiNet
 ) : ScreenModel
 {
     var uiState by mutableStateOf(RegisterScreenState(username = username, password = password))
@@ -42,55 +43,9 @@ class RegisterScreenModel(
 
     fun changeConfirmingPasswordVisibility() = changeUiState(confirmingPasswordShown = !uiState.confirmingPasswordShown)
 
+    fun setGender(gender: Gender) = changeUiState(gender = gender)
+
     fun registrationSuccessEventConsumed() = changeUiState(registrationSuccessEvent = false, errorText = "")
-
-    fun onImportClick()
-    {
-        changeUiState(filePickerOpen = true)
-    }
-
-    fun onImportFileChosen(path: String)
-    {
-        screenModelScope.launch {
-            csvReader {
-                delimiter = importConfig.csvDelimiter
-            }.openAsync(path) {
-                readAllAsSequence().forEach { fields ->
-                    if (fields.size != 4)
-                    {
-                        logger.warn { "IMPORT: Skipped line because it had ${fields.size} fields instead of 3" }
-                        return@forEach
-                    }
-
-                    val (username, firstName, lastName, password) = fields
-
-                    val userDto = UserDto(
-                        username = username,
-                        firstName = firstName,
-                        lastName = lastName
-                    )
-                    try
-                    {
-                        userService.createUser(userDto, password)
-                        logger.info { "IMPORT: Imported $username - $firstName $lastName" }
-                    }
-                    catch (e: UsernameAlreadyExistsException)
-                    {
-                        logger.info { "IMPORT: $username - $firstName $lastName was not imported, because it already exists" }
-                    }
-                    catch (e: Exception)
-                    {
-                        logger.error { "IMPORT: $username - $firstName $lastName was not imported. (${e.message})" }
-                    }
-                }
-            }
-        }
-    }
-
-    fun closeImportFilePicker()
-    {
-        changeUiState(filePickerOpen = false)
-    }
 
     fun register()
     {
@@ -114,7 +69,8 @@ class RegisterScreenModel(
         val userDto = UserDto(
             username = uiState.username,
             firstName = uiState.firstName,
-            lastName = uiState.lastName
+            lastName = uiState.lastName,
+            gender = uiState.gender
         )
         val password = uiState.password
 
@@ -127,7 +83,7 @@ class RegisterScreenModel(
             }
             catch (e: UnresolvedAddressException)
             {
-                changeUiState(errorText = "There was an error connecting to the database, check your internet connection")
+                changeUiState(errorText = Messages.networkError)
             }
             catch (e: UsernameAlreadyExistsException)
             {
@@ -150,9 +106,9 @@ class RegisterScreenModel(
         confirmingPassword: String = uiState.confirmingPassword,
         passwordShown: Boolean = uiState.passwordShown,
         confirmingPasswordShown: Boolean = uiState.confirmingPasswordShown,
+        gender: Gender = uiState.gender,
         errorText: String = uiState.errorText,
         registrationSuccessEvent: Boolean = uiState.registrationSuccessEvent,
-        filePickerOpen: Boolean = uiState.filePickerOpen
     )
     {
         uiState = uiState.copy(
@@ -163,11 +119,10 @@ class RegisterScreenModel(
             confirmingPassword = confirmingPassword,
             passwordShown = passwordShown,
             confirmingPasswordShown = confirmingPasswordShown,
+            gender = gender,
             errorText = errorText,
             registrationSuccessEvent = registrationSuccessEvent,
-            filePickerOpen = filePickerOpen
         )
     }
-
     private fun String.removeWhitespace() = this.replace(Regex("\\s"), "")
 }

@@ -1,0 +1,4 @@
+- Optimize vote querying
+- Handle errors better
+- Optimize queries (limit 1)
+- Add logging

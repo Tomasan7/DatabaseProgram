@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -50,11 +51,23 @@ fun Post(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "${post.author.firstName} ${post.author.lastName}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "${post.author.firstName} ${post.author.lastName}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (!post.public)
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = "Private post",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                }
                 Text(
                     text = post.uploadDate.format(dateFormat),
                     style = MaterialTheme.typography.labelSmall,
@@ -71,7 +84,7 @@ fun Post(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete post",
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.secondary,
                         )
                     }
                     IconButton(onEditClick) {
@@ -171,6 +184,7 @@ fun PostPreview()
         true,
         5,
         3,
+        true,
         1
     )
 

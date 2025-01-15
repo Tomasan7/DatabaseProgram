@@ -24,7 +24,7 @@ fun PasswordTextField(
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions(
         keyboardType = KeyboardType.Password,
-        autoCorrect = false
+        autoCorrectEnabled = false
     ),
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     label: @Composable (() -> Unit)? = null

@@ -1,51 +1,47 @@
 package me.tomasan7.opinet.post
 
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import me.tomasan7.opinet.comment.CommentService
-import me.tomasan7.opinet.votes.VotesService
+import me.tomasan7.opinet.friend.FriendTable
+import me.tomasan7.opinet.service.DatabaseService
+import me.tomasan7.opinet.user.Gender
+import me.tomasan7.opinet.user.UserTable
+import me.tomasan7.opinet.vote.VoteService
+import me.tomasan7.opinet.vote.VoteTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
+import sun.tools.jconsole.Messages.IS
+import javax.swing.DropMode.ON
 
 class DatabasePostService(
-    private val database: Database,
+    database: Database,
     private val commentService: CommentService,
-    private val votesService: VotesService
-) : PostService
+    private val voteService: VoteService
+) : PostService, DatabaseService(database, PostTable)
 {
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) = withContext(Dispatchers.IO) {
-        transaction(database, statement = statement)
-    }
-
-    suspend fun init()
-    {
-        dbQuery {
-            SchemaUtils.create(PostTable)
-        }
-    }
-
-    private fun ResultRow.toPostDto() = PostDto(
-        title = this[PostTable.title],
-        content = this[PostTable.content],
-        authorId = this[PostTable.authorId].value,
-        uploadDate = this[PostTable.uploadDate],
-        id = this[PostTable.id].value
-    )
-
     override suspend fun createPost(postDto: PostDto): Int
     {
         if (postDto.id != null)
             throw IllegalArgumentException("Post id must be null when creating a new post")
 
         return dbQuery {
-            PostTable.insertAndGetId {
+            val postId = PostTable.insertAndGetId {
                 it[title] = postDto.title
+                it[public] = postDto.public
                 it[content] = postDto.content
                 it[uploadDate] = postDto.uploadDate
                 it[authorId] = postDto.authorId
             }.value
+            VoteTable.insert {
+                it[VoteTable.postId] = postId
+                it[VoteTable.userId] = postDto.authorId
+                it[VoteTable.upDown] = true
+                it[VoteTable.votedAt] = Clock.System.now().epochSeconds.toUInt()
+            }
+            postId
         }
     }
 
@@ -61,6 +57,56 @@ class DatabasePostService(
             .orderBy(PostTable.uploadDate to SortOrder.DESC)
             .map { it.toPostDto() }
             .toImmutableList()
+    }
+
+    override suspend fun getAllPostsVisibleToOrderedByUploadDateDesc(userId: Int): ImmutableList<PostDto>
+    {
+        val f1 = FriendTable.alias("f1")
+        val f2 = FriendTable.alias("f2")
+
+        return dbQuery {
+            PostTable.leftJoin(
+                otherTable = f1,
+                additionalConstraint = { PostTable.authorId eq f1[FriendTable.requesterId] }
+            ).leftJoin(
+                otherTable = f2,
+                additionalConstraint = { (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.targetId] eq f2[FriendTable.requesterId]) }
+            ).selectAll()
+                .withDistinctOn(PostTable.id)
+                .where {
+                    (PostTable.public eq true) or
+                            ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
+                            ((f1[FriendTable.targetId] eq userId) and (f2[FriendTable.requesterId] eq userId))
+                }
+                .orderBy(PostTable.uploadDate to SortOrder.DESC)
+                .map { it.toPostDto() }
+                .toImmutableList()
+        }
+    }
+
+    override suspend fun getPrivatePostsVisibleToOrderedByUploadDateDesc(userId: Int): ImmutableList<PostDto>
+    {
+        val f1 = FriendTable.alias("f1")
+        val f2 = FriendTable.alias("f2")
+
+        // TODO: DRY: these two (getXPosts..) selects are the same except public check
+        return dbQuery {
+            PostTable.leftJoin(
+                otherTable = f1,
+                additionalConstraint = { PostTable.authorId eq f1[FriendTable.requesterId] }
+            ).leftJoin(
+                otherTable = f2,
+                additionalConstraint = { (PostTable.authorId eq f2[FriendTable.targetId]) and (f1[FriendTable.targetId] eq f2[FriendTable.requesterId]) }
+            ).selectAll()
+                .withDistinctOn(PostTable.id)
+                .where {
+                    ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
+                            ((f1[FriendTable.targetId] eq userId) and (f2[FriendTable.requesterId] eq userId))
+                }
+                .orderBy(PostTable.uploadDate to SortOrder.DESC)
+                .map { it.toPostDto() }
+                .toImmutableList()
+        }
     }
 
     override suspend fun getPostsByAuthorIdOrderedByUploadDateDesc(authorId: Int) = dbQuery {
@@ -88,7 +134,7 @@ class DatabasePostService(
     override suspend fun deletePost(id: Int): Boolean
     {
         commentService.deleteCommentsForPost(id)
-        votesService.deleteVotesForPost(id)
+        voteService.deleteVotesForPost(id)
 
         return dbQuery {
             PostTable.deleteWhere { PostTable.id eq id } > 0

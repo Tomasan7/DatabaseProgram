@@ -6,23 +6,27 @@ import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.collections.immutable.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.comment.CommentDto
 import me.tomasan7.opinet.comment.CommentService
 import me.tomasan7.opinet.post.PostService
 import me.tomasan7.opinet.user.UserService
+import me.tomasan7.opinet.util.isNetworkError
 import me.tomasan7.opinet.util.replace
-import me.tomasan7.opinet.votes.VoteDto
-import me.tomasan7.opinet.votes.VotesService
+import me.tomasan7.opinet.vote.VoteDto
+import me.tomasan7.opinet.vote.VoteService
 
 class FeedScreenModel(
     private val userService: UserService,
     private val postService: PostService,
     private val commentService: CommentService,
-    private val votesService: VotesService,
+    private val voteService: VoteService,
     private val currentUser: User
 ) : ScreenModel
 {
@@ -30,47 +34,83 @@ class FeedScreenModel(
         private set
 
     private val cachedUsers = mutableMapOf<Int, User>(currentUser.id to currentUser)
+    private var loadJob: Job? = null
 
     fun loadPosts()
     {
-        screenModelScope.launch {
+        loadJob?.cancel()
+        changeUiState(loading = true)
+        loadJob = screenModelScope.launch {
             try
             {
-                val posts = postService.getAllPostsOrderedByUploadDateDesc().map { postDto ->
-                    val votesOnPost = votesService.getVotesOnPost(postDto.id!!)
+                val postDtos =
+                    if (uiState.tab == FeedScreenTab.ALL) postService.getAllPostsVisibleToOrderedByUploadDateDesc(
+                        currentUser.id
+                    )
+                    else postService.getPrivatePostsVisibleToOrderedByUploadDateDesc(currentUser.id)
+                val posts = postDtos.map { postDto ->
+                    val votesOnPost = voteService.getVotesOnPost(postDto.id!!)
                     val voted = votesOnPost.find { it.userId == currentUser.id }?.upDown
                     postDto.toPost(
                         authorGetter = { userId -> getUser(userId) },
                         voted = voted,
-                        commentCountGetter = { commentService.getNumberOfCommentsForPost(postDto.id!!).toInt() },
+                        commentCountGetter = { commentService.getNumberOfCommentsForPost(postDto.id).toInt() },
                         votesGetter = { votesOnPost.count { it.upDown } to votesOnPost.count { !it.upDown } }
                     )
                 }.toImmutableList()
-                changeUiState(posts = posts)
+                changeUiState(posts = posts, loading = false)
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
 
     fun editPost(post: Post)
     {
-        uiState = uiState.copy(editPostEvent = post)
+        changeUiState(editPostEvent = post)
+    }
+
+    fun onEventErrorConsumed()
+    {
+        changeUiState(errorText = null)
     }
 
     fun editPostEventConsumed()
     {
-        uiState = uiState.copy(editPostEvent = null)
+        changeUiState(editPostEvent = null)
+    }
+
+    fun setTab(tab: FeedScreenTab)
+    {
+        changeUiState(tab = tab, posts = persistentListOf())
+        loadPosts()
     }
 
     fun deletePost(post: Post)
     {
         screenModelScope.launch {
-            val result = postService.deletePost(post.id)
-            if (result)
-                changeUiState(posts = (uiState.posts - post).toImmutableList())
+            try
+            {
+                val result = postService.deletePost(post.id)
+                if (result)
+                    changeUiState(posts = (uiState.posts - post).toImmutableList())
+            }
+            catch (e: Exception)
+            {
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
+            }
         }
     }
 
@@ -92,7 +132,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -121,7 +166,7 @@ class FeedScreenModel(
                 val newPost = oldPost.copy(
                     commentCount = oldPost.commentCount + 1
                 )
-                val newPosts = (uiState.posts - oldPost) + newPost
+                val newPosts = uiState.posts.replace(oldPost, newPost)
                 changeUiState(
                     commentsDialogState = uiState.commentsDialogState.copy(comments = newComments),
                     posts = newPosts.toImmutableList()
@@ -129,7 +174,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -149,14 +199,14 @@ class FeedScreenModel(
             {
                 val previousVote = post.voted
                 if (previousVote != null)
-                    votesService.removeVoteByUserOnPost(currentUser.id, post.id)
+                    voteService.removeVoteByUserOnPost(currentUser.id, post.id)
                 val voteDto = VoteDto(
                     upDown = value,
                     votedAt = Clock.System.now(),
                     userId = currentUser.id,
                     postId = post.id
                 )
-                votesService.createVote(voteDto)
+                voteService.createVote(voteDto)
                 val newPost = post.copy(
                     voted = value,
                     upVotes = post.upVotes + if (value) 1 else 0 - if (previousVote == true) 1 else 0,
@@ -166,7 +216,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -176,7 +231,7 @@ class FeedScreenModel(
         screenModelScope.launch {
             try
             {
-                val result = votesService.removeVoteByUserOnPost(currentUser.id, post.id)
+                val result = voteService.removeVoteByUserOnPost(currentUser.id, post.id)
                 if (result)
                 {
                     val newPost = post.copy(
@@ -189,7 +244,12 @@ class FeedScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
@@ -203,12 +263,20 @@ class FeedScreenModel(
 
     private fun changeUiState(
         posts: ImmutableList<Post> = uiState.posts,
-        commentsDialogState: FeedScreenState.CommentsDialogState = uiState.commentsDialogState
+        loading: Boolean = uiState.loading,
+        tab: FeedScreenTab = uiState.tab,
+        commentsDialogState: FeedScreenState.CommentsDialogState = uiState.commentsDialogState,
+        errorText: String? = uiState.errorText,
+        editPostEvent: Post? = uiState.editPostEvent
     )
     {
         uiState = uiState.copy(
             posts = posts,
-            commentsDialogState = commentsDialogState
+            loading = loading,
+            tab = tab,
+            commentsDialogState = commentsDialogState,
+            errorText = errorText,
+            editPostEvent = editPostEvent
         )
     }
 }

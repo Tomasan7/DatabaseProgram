@@ -1,27 +1,14 @@
 package me.tomasan7.opinet.comment
 
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import me.tomasan7.opinet.service.DatabaseService
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class DatabaseCommentService(
-    private val database: Database
-) : CommentService
+    database: Database
+) : CommentService, DatabaseService(database, CommentTable)
 {
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) = withContext(Dispatchers.IO) {
-        transaction(database, statement = statement)
-    }
-
-    suspend fun init()
-    {
-        dbQuery {
-            SchemaUtils.create(CommentTable)
-        }
-    }
-
     private fun ResultRow.toCommentDto() = CommentDto(
         text = this[CommentTable.text],
         uploadDate = this[CommentTable.uploadDate],
@@ -47,7 +34,7 @@ class DatabaseCommentService(
 
     override suspend fun getCommentById(id: Int) = dbQuery {
         CommentTable.selectAll()
-            .where{ CommentTable.id eq id }
+            .where { CommentTable.id eq id }
             .singleOrNull()
             ?.toCommentDto()
     }

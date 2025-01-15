@@ -1,38 +1,17 @@
 package me.tomasan7.opinet.user
 
 import diglol.crypto.Hash
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import me.tomasan7.opinet.service.DatabaseService
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.SQLIntegrityConstraintViolationException
 
 class DatabaseUserService(
-    private val database: Database
-) : UserService
+    database: Database
+) : UserService, DatabaseService(database, UserTable)
 {
     /* TODO: Replace with Argon2 */
     private val sha256 = Hash(Hash.Type.SHA256)
-
-    private suspend fun <T> dbQuery(statement: Transaction.() -> T) = withContext(Dispatchers.IO) {
-        transaction(database, statement = statement)
-    }
-
-    suspend fun init()
-    {
-        dbQuery {
-            SchemaUtils.create(UserTable)
-        }
-    }
-
-    private fun ResultRow.toUser() = UserDto(
-        username = this[UserTable.username],
-        firstName = this[UserTable.firstName],
-        lastName = this[UserTable.lastName],
-        id = this[UserTable.id].value
-    )
-
     override suspend fun createUser(userDto: UserDto, password: String): Int
     {
         if (userDto.id != null)
@@ -47,6 +26,7 @@ class DatabaseUserService(
                     it[username] = userDto.username
                     it[firstName] = userDto.firstName
                     it[lastName] = userDto.lastName
+                    it[gender] = userDto.gender
                     it[this.password] = passwordHash
                 }.value
             }
@@ -72,6 +52,14 @@ class DatabaseUserService(
             .where { UserTable.username eq username }
             .singleOrNull()
             ?.toUser()
+    }
+
+    override suspend fun getAllUsers(): List<UserDto>
+    {
+        return dbQuery {
+            UserTable.selectAll()
+                .map { it.toUser() }
+        }
     }
 
     override suspend fun loginUser(username: String, password: String): Boolean

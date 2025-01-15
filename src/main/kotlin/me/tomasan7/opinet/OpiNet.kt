@@ -10,11 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.rememberNavigatorScreenModel
@@ -27,22 +25,28 @@ import me.tomasan7.opinet.comment.DatabaseCommentService
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.config.ConfigProvider
 import me.tomasan7.opinet.config.FileConfigProvider
+import me.tomasan7.opinet.friend.DatabaseFriendService
+import me.tomasan7.opinet.friend.FriendService
 import me.tomasan7.opinet.loginscreen.LoginScreen
 import me.tomasan7.opinet.post.DatabasePostService
 import me.tomasan7.opinet.post.PostService
+import me.tomasan7.opinet.report.DatabaseReportService
+import me.tomasan7.opinet.report.ReportService
 import me.tomasan7.opinet.ui.theme.AppTheme
 import me.tomasan7.opinet.user.DatabaseUserService
 import me.tomasan7.opinet.user.UserDto
 import me.tomasan7.opinet.user.UserService
-import me.tomasan7.opinet.votes.DatabaseVotesService
-import me.tomasan7.opinet.votes.VotesService
+import me.tomasan7.opinet.vote.DatabaseVoteService
+import me.tomasan7.opinet.vote.VoteService
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.io.path.deleteIfExists
 
 class OpiNet : ConfigProvider, ScreenModel
 {
-    lateinit var currentUser: UserDto
+    var currentUser: UserDto? = null
 
     private lateinit var configProvider: ConfigProvider
     private lateinit var config: Config
@@ -53,7 +57,11 @@ class OpiNet : ConfigProvider, ScreenModel
         private set
     lateinit var commentService: CommentService
         private set
-    lateinit var votesService: VotesService
+    lateinit var voteService: VoteService
+        private set
+    lateinit var reportService: ReportService
+        private set
+    lateinit var friendService: FriendService
         private set
 
     fun init()
@@ -82,10 +90,11 @@ class OpiNet : ConfigProvider, ScreenModel
 
         database = Database.connect(
             url = dbConf.url,
-            driver = dbConf.driver,
             user = dbConf.user,
             password = dbConf.password.value,
         )
+
+        TransactionManager.defaultDatabase = database
     }
 
     private fun initServices()
@@ -93,13 +102,17 @@ class OpiNet : ConfigProvider, ScreenModel
         runBlocking {
             userService = DatabaseUserService(database).also { it.init() }
             commentService = DatabaseCommentService(database).also { it.init() }
-            votesService = DatabaseVotesService(database).also { it.init() }
-            postService = DatabasePostService(database, commentService, votesService).also { it.init() }
+            voteService = DatabaseVoteService(database).also { it.init() }
+            postService = DatabasePostService(database, commentService, voteService).also { it.init() }
+            reportService = DatabaseReportService(database).also { it.init() }
+            friendService = DatabaseFriendService(database).also { it.init() }
         }
     }
 
     fun start() = singleWindowApplication(
         title = "OpiNet",
+        state = WindowState(width = 800.dp, height = 800.dp),
+        exitProcessOnExit = true,
         icon = BitmapPainter(useResource("opinet.png", ::loadImageBitmap))
     ) {
         AppTheme {
@@ -121,6 +134,12 @@ class OpiNet : ConfigProvider, ScreenModel
                 }
             }
         }
+    }
+
+    fun logout()
+    {
+        currentUser = null
+        config.sessionFile.deleteIfExists()
     }
 
     override fun getConfig() = config
