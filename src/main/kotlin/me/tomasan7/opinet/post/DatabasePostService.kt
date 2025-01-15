@@ -75,6 +75,7 @@ class DatabasePostService(
                 .withDistinct()
                 .where {
                     (PostTable.public eq true) or
+                            (PostTable.authorId eq userId) or
                             ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
                             ((f1[FriendTable.targetId] eq userId) and (f2[FriendTable.requesterId] eq userId))
                 }
@@ -100,6 +101,7 @@ class DatabasePostService(
             ).selectAll()
                 .withDistinct()
                 .where {
+                    (PostTable.authorId eq userId) or
                     ((f1[FriendTable.requesterId] eq userId) and (f2[FriendTable.targetId] eq userId)) or
                             ((f1[FriendTable.targetId] eq userId) and (f2[FriendTable.requesterId] eq userId))
                 }
