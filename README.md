@@ -1,5 +1,7 @@
 **This project was made as a school assignment and has no real purpose!**
 
+Author: Tomáš Hůla
+
 # OpiNet
 
 OpiNet (opinion net) is an imaginary opinion sharing social media platform, where anyone can create an account and then upload posts, up/downvote and comment posts
