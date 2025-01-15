@@ -105,7 +105,7 @@ data class NewPostScreen(
                     OutlinedTextField(
                         value = uiState.title,
                         onValueChange = { model.setTitle(it) },
-                        singleLine = false,
+                        singleLine = true,
                         label = { Text("Title") }
                     )
                     OutlinedTextField(
