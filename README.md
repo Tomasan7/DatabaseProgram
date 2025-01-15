@@ -11,6 +11,10 @@ This project has no purpose as it directly interacts with the database, which ma
 
 ## Running
 
+### Prerequisites
+
+The program requires Java 21 or newer to run.
+
 ### From JAR
 
 1. Go to [GitHub releases](https://github.com/Tomasan7/OpiNet/releases) open the latest release and download the JAR file.
@@ -21,7 +25,7 @@ This project has no purpose as it directly interacts with the database, which ma
 
 1. Clone the repository: `git clone https://github.com/Tomasan7/OpiNet.git`
 2. Navigate to the project directory: `cd OpiNet`
-3. Run the project: `./gradlew run` (Linux) or `gradlew.bat run` (Windows)
+3. Build and run the project: `./gradlew run` (Linux) or `gradlew.bat run` (Windows)
 
 ### Configuration
 
