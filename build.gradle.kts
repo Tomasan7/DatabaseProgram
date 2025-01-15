@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.shadow)
 }
 
 group = "me.tomasan7"
@@ -70,6 +71,13 @@ compose.desktop {
             packageName = "OpiNet"
             packageVersion = version.toString()
         }
+    }
+}
+
+tasks.shadowJar {
+    manifest {
+        attributes["Main-Class"] = "me.tomasan7.opinet.MainKt"
+        archiveClassifier = "executable"
     }
 }
 

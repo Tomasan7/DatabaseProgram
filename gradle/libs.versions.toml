@@ -34,6 +34,8 @@ diglol-crypto = "0.2.0"
 kotlinCsv = "1.10.0"
 kotlinx-serialization = "1.8.0"
 
+shadow = "8.3.5"
+
 [libraries]
 # Kotlin
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -86,3 +88,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinx-serialization" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
