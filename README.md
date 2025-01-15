@@ -30,3 +30,94 @@ The program requires Java 21 or newer to run.
 ### Configuration
 
 When the project is run for the first time a `opinet.conf` file is created in the working directory.
+
+### Import
+
+Import options can be found in the `Management Screen` which is accessible a button at the bottom-right of the Login Screen.
+
+#### Users
+
+Users can be imported from CSV.
+Note, that CSV delimiter can be configured in the config.
+CSV must follow this format:
+```
+username,firstName,lastName,password,gender
+```
+Where `gender` is one of the following values: `MALE`, `FEMALE`, `NON_BINARY`
+
+#### Posts
+
+Posts can be imported from CSV.
+Note, that CSV delimiter and date format can be configured in the config.
+CSV must follow this format:
+```
+authorUsername,public,title,content
+```
+Where `public` can be either `true` (or `1`) or `false` (or `0`)
+
+### Export
+
+Export options can be found in the `Management Screen` which is accessible a button at the bottom-right of the Login Screen.
+
+#### Report
+
+Multiple reports can be exported as a whole.
+The resulting file is a JSON of the following structure:
+```
+{
+    mostActiveUser: {
+        entity: {
+            username: string,
+            firstName: string,
+            lastName: string,
+            gender: Gender,
+            id: int
+        },
+        value: int
+    },
+    mostActivePost: {
+        entity: {
+            title: string,
+            content: string,
+            uploadDate: date,
+            authorId: int,
+            public: boolean,
+            id: int
+        },
+        value: int
+    },
+    mostUpvotedPost: {
+        entity: {
+            title: string,
+            content: string,
+            uploadDate: date,
+            authorId: int,
+            public: boolean,
+            id: int
+        },
+        value: int
+    },
+    mostDownvotedPost: {
+        entity: {
+            title: string,
+            content: string,
+            uploadDate: date,
+            authorId: int,
+            public: boolean,
+            id: int
+        },
+        value: int
+    },
+    mostCommentedPost: {
+        entity: {
+            title: string,
+            content: string,
+            uploadDate: date,
+            authorId: int,
+            public: boolean,
+            id: int
+        },
+        value: int
+    }
+}
+```
