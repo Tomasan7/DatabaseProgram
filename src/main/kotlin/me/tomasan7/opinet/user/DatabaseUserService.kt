@@ -19,9 +19,9 @@ class DatabaseUserService(
 
         val passwordHash = sha256.hash(password.toByteArray(Charsets.UTF_8))
 
-        return try
-        {
-            dbQuery {
+        return dbQuery {
+            try
+            {
                 UserTable.insertAndGetId {
                     it[username] = userDto.username
                     it[firstName] = userDto.firstName
@@ -30,13 +30,13 @@ class DatabaseUserService(
                     it[this.password] = passwordHash
                 }.value
             }
-        }
-        catch (e: ExposedSQLException)
-        {
-            if (e.cause is SQLIntegrityConstraintViolationException)
-                throw UsernameAlreadyExistsException(userDto.username)
-            else
-                throw e
+            catch (e: ExposedSQLException)
+            {
+                if (e.cause is SQLIntegrityConstraintViolationException)
+                    throw UsernameAlreadyExistsException(userDto.username)
+                else
+                    throw e
+            }
         }
     }
 
