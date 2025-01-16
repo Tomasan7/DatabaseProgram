@@ -15,7 +15,7 @@ This project has no purpose as it directly interacts with the database, which ma
 
 The program requires Java 21 or newer to run.
 
-### From JAR
+### From executable (JAR)
 
 1. Go to [GitHub releases](https://github.com/Tomasan7/OpiNet/releases) open the latest release and download the JAR file.
 2. Open a terminal and navigate to the directory where the JAR file is located.
@@ -30,6 +30,8 @@ The program requires Java 21 or newer to run.
 ### Configuration
 
 When the project is run for the first time a `opinet.conf` file is created in the working directory.
+Open it to see what is configurable.
+[Default config](src/main/resources/config.conf)
 
 ### Import
 
