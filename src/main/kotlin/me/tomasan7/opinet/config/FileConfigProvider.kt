@@ -1,6 +1,7 @@
 package me.tomasan7.opinet.config
 
 import com.sksamuel.hoplite.*
+import com.sksamuel.hoplite.hocon.HoconParser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Files
@@ -17,6 +18,7 @@ class FileConfigProvider(
         createFileIfNotExists()
 
         return ConfigLoaderBuilder.default()
+            .addParser("conf", HoconParser())
             .addFileSource(File(path))
             .withExplicitSealedTypes()
             .addDecoder(CharDecoder)
