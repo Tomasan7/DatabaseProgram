@@ -36,6 +36,8 @@
 
 -keep class org.freedesktop.** { *; }
 
+-keep com.github.doyaaaaaken.kotlincsv.parser.** { *; }
+
 
 
 
