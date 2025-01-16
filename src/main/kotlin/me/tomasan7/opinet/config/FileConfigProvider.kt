@@ -50,6 +50,6 @@ class FileConfigProvider(
 
     companion object
     {
-        const val DEFAULT_CONFIG_RESOURCE_PATH = "/config.conf"
+        const val DEFAULT_CONFIG_RESOURCE_PATH = "/opinet.conf"
     }
 }
