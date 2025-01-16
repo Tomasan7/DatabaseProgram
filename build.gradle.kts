@@ -84,7 +84,9 @@ compose.desktop {
 tasks.shadowJar {
     manifest {
         attributes["Main-Class"] = "me.tomasan7.opinet.MainKt"
-        archiveClassifier = "executable"
+        archiveBaseName = "OpiNet"
+        archiveAppendix = "universal"
+        archiveClassifier = ""
     }
 }
 
