@@ -24,7 +24,9 @@ dependencies {
     // compose.desktop.currentOs should be used in launcher-sourceSet
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
-    implementation(compose.desktop.currentOs)
+    implementation(compose.desktop.currentOs) {
+        exclude("org.jetbrains.compose.material")
+    }
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.core.jvm)
     implementation(libs.kotlinx.coroutines.swing)
@@ -65,6 +67,11 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "me.tomasan7.opinet.MainKt"
+
+        buildTypes.release.proguard {
+            version.set("7.6.1")
+            configurationFiles.from("proguard-rules.pro")
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Msi)
