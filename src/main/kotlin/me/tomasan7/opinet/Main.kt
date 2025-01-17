@@ -22,7 +22,7 @@ fun main(args: Array<String>)
     catch (e: Exception)
     {
         val message = if (e.isNetworkError())
-            "Could not connect to the database, check your configuration and network connection"
+            Messages.networkError
         else
             e.message
         JOptionPane.showMessageDialog(null, message ?: "There was an unknown error", "Error", JOptionPane.ERROR_MESSAGE)
