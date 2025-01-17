@@ -9,12 +9,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.util.CSVFieldNumDifferentException
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import io.github.vinceglb.filekit.core.PlatformFile
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -23,21 +18,15 @@ import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.config.Config
 import me.tomasan7.opinet.post.PostDto
 import me.tomasan7.opinet.post.PostService
+import me.tomasan7.opinet.post.PostTable
 import me.tomasan7.opinet.report.ReportService
-import me.tomasan7.opinet.user.Gender
-import me.tomasan7.opinet.user.UserDto
-import me.tomasan7.opinet.user.UserService
-import me.tomasan7.opinet.user.UsernameAlreadyExistsException
+import me.tomasan7.opinet.user.*
 import me.tomasan7.opinet.util.isNetworkError
 import me.tomasan7.opinet.util.now
 import me.tomasan7.opinet.util.parseLocalDate
+import me.tomasan7.opinet.util.size
 import java.io.ByteArrayOutputStream
 import java.time.format.DateTimeFormatter
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.component3
-import kotlin.collections.component4
-import kotlin.sequences.forEach
 
 private val logger = logger { }
 
@@ -75,22 +64,58 @@ class ManagementScreenModel(
             var importedUsersCount = 0
             var failedUsersCount = 0
             for (path in files)
+            {
+                var currentLineNum = 0
                 try
                 {
-                    readCsvSequence(path) { fields ->
+                    readCsvSequence(path) { lineNum, fields ->
+                        currentLineNum = lineNum
                         if (fields.size != 5)
                         {
+                            failedUsersCount++
                             logger.warn { "IMPORT: Skipped line because it had ${fields.size} fields instead of 5" }
                             throw CSVFieldNumDifferentException(5, -1, fields.size)
                         }
 
                         val (username, firstName, lastName, password, genderStr) = fields
 
+                        val gender = try
+                        {
+                            Gender.valueOf(genderStr)
+                        }
+                        catch (ignored: IllegalArgumentException)
+                        {
+                            failedUsersCount++
+                            val possibleValues = Gender.entries.joinToString()
+                            return@readCsvSequence logger.info { "IMPORT: User '$username' was not imported, because gender '$genderStr' does not exist. Possible values: $possibleValues" }
+                        }
+
+                        // TODO: ScreenModel should not directly depend on Model implementation. Move this logic to abstract service.
+                        val maxUsernameLength = UserTable.username.size
+                        val maxFirstNameLength = UserTable.firstName.size
+                        val maxLastNameLength = UserTable.lastName.size
+                        if (username.length > maxUsernameLength)
+                        {
+                            failedUsersCount++
+                            return@readCsvSequence logger.info { "IMPORT: User '$username' was not imported, because username is too long. Max length is $maxUsernameLength" }
+                        }
+                        else if (firstName.length > maxFirstNameLength)
+                        {
+                            failedUsersCount++
+                            return@readCsvSequence logger.info { "IMPORT: User '$username' was not imported, because first name is too long. Max length is $maxFirstNameLength" }
+                        }
+                        else if (lastName.length > maxLastNameLength)
+                        {
+                            failedUsersCount++
+                            return@readCsvSequence logger.info { "IMPORT: User '$username' was not imported, because last name is too long. Max length is $maxLastNameLength" }
+                        }
+
+
                         val userDto = UserDto(
                             username = username,
                             firstName = firstName,
                             lastName = lastName,
-                            gender = Gender.valueOf(genderStr)
+                            gender = gender
                         )
                         try
                         {
@@ -121,8 +146,11 @@ class ManagementScreenModel(
                 }
                 catch (e: Exception)
                 {
-                    changeUiState(errorText = Messages.incorrectFormat.format(getUsersFormatString()))
+                    val errorLine = currentLineNum + 1
+                    logger.error { "IMPORT: Import aborted on line $errorLine. ${e.message}" }
+                    changeUiState(usersImportResult = ManagementScreenState.ImportResult(importedUsersCount, failedUsersCount, errorLine))
                 }
+            }
         }
     }
 
@@ -214,11 +242,15 @@ class ManagementScreenModel(
             var importedPostsCount = 0
             var failedPostsCount = 0
             for (path in paths)
+            {
+                var currentLineNum = 0
                 try
                 {
-                    readCsvSequence(path) { fields ->
+                    readCsvSequence(path) { lineNum, fields ->
+                        currentLineNum = lineNum
                         if (fields.size != 5)
                         {
+                            failedPostsCount++
                             logger.info { "IMPORT: Post was not imported, because it has ${fields.size} fields instead of 5" }
                             throw CSVFieldNumDifferentException(5, -1, fields.size)
                         }
@@ -226,7 +258,10 @@ class ManagementScreenModel(
                         val (authorUsername, publicStr, uploadDateStr, title, content) = fields
 
                         if (authorUsername.isBlank() || uploadDateStr.isBlank() || title.isBlank() || content.isBlank())
+                        {
+                            failedPostsCount++
                             return@readCsvSequence logger.info { "IMPORT: Post was not imported, because it has empty fields" }
+                        }
 
                         val uploadDate = try
                         {
@@ -234,28 +269,42 @@ class ManagementScreenModel(
                         }
                         catch (e: Exception)
                         {
+                            failedPostsCount++
                             logger.info { "IMPORT: Post was not imported, because it has an invalid upload date format. dd.MM.yyyy is expected." }
                             return@readCsvSequence
                         }
 
                         if (uploadDate > LocalDate.now())
+                        {
+                            failedPostsCount++
                             return@readCsvSequence logger.info { "IMPORT: Post was not imported, because it has an upload date in the future" }
+                        }
 
-                        val author = userService.getUserByUsername(authorUsername)
-
-                        if (author == null)
-                            return@readCsvSequence logger.info { "IMPORT: Post was not imported, because user '$authorUsername' does not exist" }
-
-                        val postDto = PostDto(
-                            title = title,
-                            content = content,
-                            uploadDate = uploadDate,
-                            public = publicStr.toBoolean(),
-                            authorId = author.id!!
-                        )
+                        // TODO: ScreenModel should not directly depend on Model implementation. Move this logic to abstract service.
+                        val maxTitleLength = PostTable.title.size
+                        if (title.length > maxTitleLength)
+                        {
+                            failedPostsCount++
+                            return@readCsvSequence logger.info { "IMPORT: Post was not imported, because title is too long. Max length is $maxTitleLength" }
+                        }
 
                         try
                         {
+                            val author = userService.getUserByUsername(authorUsername)
+
+                            if (author == null)
+                            {
+                                failedPostsCount++
+                                return@readCsvSequence logger.info { "IMPORT: Post was not imported, because user '$authorUsername' does not exist" }
+                            }
+
+                            val postDto = PostDto(
+                                title = title,
+                                content = content,
+                                uploadDate = uploadDate,
+                                public = publicStr.toBoolean(),
+                                authorId = author.id!!
+                            )
                             postService.createPost(postDto)
                             importedPostsCount++
                             logger.info { "IMPORT: Imported post titled '$title' by $authorUsername uploaded at $uploadDate" }
@@ -271,25 +320,29 @@ class ManagementScreenModel(
                     }
                     changeUiState(postsImportResult = ManagementScreenState.ImportResult(importedPostsCount, failedPostsCount))
                 }
+                catch (e: CancellationException)
+                {
+                    throw e
+                }
                 catch (e: Exception)
                 {
-                    if (e is CancellationException)
-                        throw e
-                    else
-                        changeUiState(errorText = Messages.incorrectFormat.format(getPostsFormatString()))
+                    val errorLine = currentLineNum + 1
+                    logger.error { "IMPORT: Import aborted on line $errorLine: ${e.message}" }
+                    changeUiState(postsImportResult = ManagementScreenState.ImportResult(importedPostsCount, failedPostsCount, errorLine))
                 }
+            }
         }
     }
 
     private suspend fun readCsvSequence(
         path: String,
-        action: suspend (List<String>) -> Unit
+        action: suspend (Int, List<String>) -> Unit
     )
     {
         csvReader {
             delimiter = importConfig.csvDelimiter
         }.openAsync(path) {
-            readAllAsSequence().forEach { action(it) }
+            readAllAsSequence().withIndex().forEach { action(it.index + 1, it.value) }
         }
     }
 

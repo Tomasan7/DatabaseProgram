@@ -15,12 +15,17 @@ data class ManagementScreenState(
 {
     data class ImportResult(
         val succeeded: Int,
-        val failed: Int
+        val failed: Int,
+        val abortLine: Int? = null
     )
     {
-        val partial = failed != 0 && succeeded != 0
-        val totalSuccess = failed == 0 && succeeded != 0
-        val totalFailure = succeeded == 0 && failed != 0
+        val aborted = abortLine != null
+        val partialSuccess = failed != 0 && succeeded != 0 && !aborted
+        val partialSuccessAborted = failed != 0 && succeeded != 0 && aborted
+        val totalSuccess = succeeded != 0 && failed == 0 && !aborted
+        val successAborted = succeeded != 0 && failed == 0 && aborted
+        val totalFailure = succeeded == 0 && failed != 0 && !aborted
+        val failureAborted = succeeded == 0 && failed != 0 && aborted
     }
 
     override fun equals(other: Any?): Boolean
