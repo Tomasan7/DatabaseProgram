@@ -4,7 +4,12 @@ import StackedSnackbarHost
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Help
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.QuestionMark
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -12,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -199,14 +205,41 @@ object ManagementScreen : Screen
                     style = MaterialTheme.typography.headlineMedium
                 )
                 VerticalSpacer(24.dp)
-                Tooltipped(model.getUsersFormatString()) {
-                    Button({ model.onImportUsersClicked() }) {
-                        Text("Import users")
+                val localUriHandler = LocalUriHandler.current
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Tooltipped(model.getUsersFormatString()) {
+                        Button({ model.onImportUsersClicked() }) {
+                            Text("Import users")
+                        }
+                    }
+                    IconButton(
+                        onClick = { localUriHandler.openUri("https://github.com/tomhula/OpiNet?tab=readme-ov-file#users") }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                            contentDescription = "Import users help"
+                        )
                     }
                 }
-                Tooltipped(model.getPostsFormatString()) {
-                    Button({ model.onImportPostsClicked() }) {
-                        Text("Import posts")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Tooltipped(model.getPostsFormatString()) {
+                        Button({ model.onImportPostsClicked() }) {
+                            Text("Import posts")
+                        }
+                    }
+                    IconButton(
+                        onClick = { localUriHandler.openUri("https://github.com/tomhula/OpiNet?tab=readme-ov-file#posts") }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                            contentDescription = "Import posts info"
+                        )
                     }
                 }
                 VerticalSpacer(64.dp)
