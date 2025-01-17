@@ -128,6 +128,7 @@ class DatabasePostService(
             PostTable.update({ PostTable.id eq postDto.id }) {
                 it[title] = postDto.title
                 it[content] = postDto.content
+                it[public] = postDto.public
                 it[uploadDate] = postDto.uploadDate
             }
         } > 0
