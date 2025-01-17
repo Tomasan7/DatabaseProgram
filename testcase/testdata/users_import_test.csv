@@ -1,0 +1,6 @@
+hula,Tomas,Hula,pswd,MALE
+cervenka,Matej,Cervenka,pswd,INVALID_GENDER
+tooLongUsernameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,First,Last,pswd,MALE
+user,TooLongFirstNameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,Last,pswd,MALE
+user2,First,TooLongLastNameeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,pswd,MALE
+bad_line
