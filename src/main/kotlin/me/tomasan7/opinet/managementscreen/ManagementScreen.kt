@@ -19,6 +19,7 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.sksamuel.hoplite.PropertySource.Companion.file
 import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.compose.rememberFileSaverLauncher
 import io.github.vinceglb.filekit.core.PickerMode
@@ -46,16 +47,16 @@ object ManagementScreen : Screen
         val importFilePicker = rememberFilePickerLauncher(
             type = PickerType.File(listOf("csv")),
             initialDirectory = System.getProperty("user.dir"),
-            mode = PickerMode.Multiple(maxItems = 10)
-        ) { files ->
-            if (files != null)
+            mode = PickerMode.Single
+        ) { file ->
+            if (file != null)
             {
-                val paths = files.map { it.path!! }
+                val path = file.path!!
 
                 if (uiState.importUsers)
-                    model.onImportUsersFilesChosen(paths)
+                    model.onImportUsersFilesChosen(path)
                 else if (uiState.importPosts)
-                    model.onImportPostsFilesChosen(paths)
+                    model.onImportPostsFilesChosen(path)
             }
             else
             {
