@@ -38,8 +38,6 @@ The program requires Java 21 or newer to run.
 2. Open a terminal and navigate to the directory where the JAR file is located.
 3. Run the JAR file: `java -jar <jarfile>`
 
-There are point in the application, where unnecessarily too many
-
 ### From code
 
 1. Clone the repository: `git clone https://github.com/Tomasan7/OpiNet.git`
