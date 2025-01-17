@@ -19,7 +19,6 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.sksamuel.hoplite.PropertySource.Companion.file
 import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.compose.rememberFileSaverLauncher
 import io.github.vinceglb.filekit.core.PickerMode
@@ -89,7 +88,17 @@ object ManagementScreen : Screen
             animation = StackedSnackbarAnimation.Slide
         )
 
-        fun String.formatImportResultMessage(importResult: ManagementScreenState.ImportResult) = format(
+        fun String.formatFailImportResultMessage(importResult: ManagementScreenState.ImportResult) = format(
+            importResult.failed,
+            importResult.abortLine
+        )
+
+        fun String.formatSuccessImportResultMessage(importResult: ManagementScreenState.ImportResult) = format(
+            importResult.succeeded,
+            importResult.abortLine
+        )
+
+        fun String.formatPartialSuccessImportResultMessage(importResult: ManagementScreenState.ImportResult) = format(
             importResult.succeeded,
             importResult.failed,
             importResult.abortLine
@@ -101,27 +110,27 @@ object ManagementScreen : Screen
                 when
                 {
                     usersImportResult.totalSuccess -> stackedSnackbarHostState.showSuccessSnackbar(
-                        title = Messages.Import.Users.totalSuccess.formatImportResultMessage(usersImportResult),
+                        title = Messages.Import.Users.totalSuccess.formatSuccessImportResultMessage(usersImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                     usersImportResult.successAborted -> stackedSnackbarHostState.showWarningSnackbar(
-                        title = Messages.Import.Users.partialSuccessAborted.formatImportResultMessage(usersImportResult),
+                        title = Messages.Import.Users.partialSuccessAborted.formatSuccessImportResultMessage(usersImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                     usersImportResult.partialSuccess -> stackedSnackbarHostState.showWarningSnackbar(
-                        title = Messages.Import.Users.partialSuccess.formatImportResultMessage(usersImportResult),
-                        duration = StackedSnackbarDuration.Short
+                        title = Messages.Import.Users.partialSuccess.formatPartialSuccessImportResultMessage(usersImportResult),
+                        duration = StackedSnackbarDuration.Long
                     )
                     usersImportResult.partialSuccessAborted -> stackedSnackbarHostState.showWarningSnackbar(
-                        title = Messages.Import.Users.partialSuccessAborted.formatImportResultMessage(usersImportResult),
-                        duration = StackedSnackbarDuration.Short
+                        title = Messages.Import.Users.partialSuccessAborted.formatPartialSuccessImportResultMessage(usersImportResult),
+                        duration = StackedSnackbarDuration.Long
                     )
                     usersImportResult.totalFailure -> stackedSnackbarHostState.showErrorSnackbar(
-                        title = Messages.Import.Users.totalFailure.formatImportResultMessage(usersImportResult),
+                        title = Messages.Import.Users.totalFailure.formatFailImportResultMessage(usersImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                     usersImportResult.failureAborted -> stackedSnackbarHostState.showErrorSnackbar(
-                        title = Messages.Import.Users.failureAborted.formatImportResultMessage(usersImportResult),
+                        title = Messages.Import.Users.failureAborted.formatFailImportResultMessage(usersImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                 }
@@ -133,27 +142,27 @@ object ManagementScreen : Screen
                 when
                 {
                     postsImportResult.totalSuccess -> stackedSnackbarHostState.showSuccessSnackbar(
-                        title = Messages.Import.Posts.totalSuccess.formatImportResultMessage(postsImportResult),
+                        title = Messages.Import.Posts.totalSuccess.formatSuccessImportResultMessage(postsImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                     postsImportResult.successAborted -> stackedSnackbarHostState.showWarningSnackbar(
-                        title = Messages.Import.Posts.partialSuccessAborted.formatImportResultMessage(postsImportResult),
+                        title = Messages.Import.Posts.partialSuccessAborted.formatSuccessImportResultMessage(postsImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                     postsImportResult.partialSuccess -> stackedSnackbarHostState.showWarningSnackbar(
-                        title = Messages.Import.Posts.partialSuccess.formatImportResultMessage(postsImportResult),
-                        duration = StackedSnackbarDuration.Short
+                        title = Messages.Import.Posts.partialSuccess.formatPartialSuccessImportResultMessage(postsImportResult),
+                        duration = StackedSnackbarDuration.Long
                     )
                     postsImportResult.partialSuccessAborted -> stackedSnackbarHostState.showWarningSnackbar(
-                        title = Messages.Import.Posts.partialSuccessAborted.formatImportResultMessage(postsImportResult),
-                        duration = StackedSnackbarDuration.Short
+                        title = Messages.Import.Posts.partialSuccessAborted.formatPartialSuccessImportResultMessage(postsImportResult),
+                        duration = StackedSnackbarDuration.Long
                     )
                     postsImportResult.totalFailure -> stackedSnackbarHostState.showErrorSnackbar(
-                        title = Messages.Import.Posts.totalFailure.formatImportResultMessage(postsImportResult),
+                        title = Messages.Import.Posts.totalFailure.formatFailImportResultMessage(postsImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                     postsImportResult.failureAborted -> stackedSnackbarHostState.showErrorSnackbar(
-                        title = Messages.Import.Posts.failureAborted.formatImportResultMessage(postsImportResult),
+                        title = Messages.Import.Posts.failureAborted.formatFailImportResultMessage(postsImportResult),
                         duration = StackedSnackbarDuration.Short
                     )
                 }
