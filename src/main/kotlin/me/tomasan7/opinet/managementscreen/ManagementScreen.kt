@@ -24,6 +24,7 @@ import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.compose.rememberFileSaverLauncher
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
+import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.getOpiNet
 import me.tomasan7.opinet.ui.component.HorizontalSpacer
 import me.tomasan7.opinet.ui.component.ScreenTitle
@@ -91,18 +92,53 @@ object ManagementScreen : Screen
         )
 
         LaunchedEffect(uiState.usersImportResult) {
-            if (uiState.usersImportResult != null)
-                stackedSnackbarHostState.showSuccessSnackbar(
-                    title = "Imported ${uiState.usersImportResult} users",
-                    duration = StackedSnackbarDuration.Short
-                )
+            val usersImportResult = uiState.usersImportResult
+            if (usersImportResult != null)
+                when
+                {
+                    usersImportResult.partial -> stackedSnackbarHostState.showWarningSnackbar(
+                        title = Messages.usersImportPartialSuccess.format(
+                            usersImportResult.succeeded,
+                            usersImportResult.failed
+                        ),
+                        duration = StackedSnackbarDuration.Short
+                    )
+
+                    usersImportResult.totalSuccess -> stackedSnackbarHostState.showSuccessSnackbar(
+                        title = Messages.usersImportTotalSuccess.format(usersImportResult.succeeded),
+                        duration = StackedSnackbarDuration.Short
+                    )
+
+                    usersImportResult.totalFailure -> stackedSnackbarHostState.showErrorSnackbar(
+                        title = Messages.usersImportTotalFailure.format(usersImportResult.failed),
+                        duration = StackedSnackbarDuration.Short
+                    )
+                }
+
         }
         LaunchedEffect(uiState.postsImportResult) {
-            if (uiState.postsImportResult != null)
-                stackedSnackbarHostState.showSuccessSnackbar(
-                    title = "Imported ${uiState.postsImportResult} posts",
-                    duration = StackedSnackbarDuration.Short
-                )
+            val postsImportResult = uiState.postsImportResult
+            if (postsImportResult != null)
+                when
+                {
+                    postsImportResult.partial -> stackedSnackbarHostState.showWarningSnackbar(
+                        title = Messages.postsImportPartialSuccess.format(
+                            postsImportResult.succeeded,
+                            postsImportResult.failed
+                        ),
+                        duration = StackedSnackbarDuration.Short
+                    )
+
+                    postsImportResult.totalSuccess -> stackedSnackbarHostState.showSuccessSnackbar(
+                        title = Messages.postsImportTotalSuccess.format(postsImportResult.succeeded),
+                        duration = StackedSnackbarDuration.Short
+                    )
+
+                    postsImportResult.totalFailure -> stackedSnackbarHostState.showErrorSnackbar(
+                        title = Messages.postsImportTotalFailure.format(postsImportResult.failed),
+                        duration = StackedSnackbarDuration.Short
+                    )
+                }
         }
 
         LaunchedEffect(uiState.errorText) {

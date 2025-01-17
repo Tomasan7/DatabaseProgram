@@ -5,14 +5,24 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class ManagementScreenState(
     val importUsers: Boolean = false,
-    val usersImportResult: Int? = null,
+    val usersImportResult: ImportResult? = null,
     val importPosts: Boolean = false,
-    val postsImportResult: Int? = null,
+    val postsImportResult: ImportResult? = null,
     val totalReport: TotalReport? = null,
     val errorText: String? = null,
     val exportTotalReportBytes: ByteArray? = null
 )
 {
+    data class ImportResult(
+        val succeeded: Int,
+        val failed: Int
+    )
+    {
+        val partial = failed != 0 && succeeded != 0
+        val totalSuccess = failed == 0 && succeeded != 0
+        val totalFailure = succeeded == 0 && failed != 0
+    }
+
     override fun equals(other: Any?): Boolean
     {
         if (this === other) return true
@@ -21,8 +31,8 @@ data class ManagementScreenState(
         other as ManagementScreenState
 
         if (importUsers != other.importUsers) return false
-        if (usersImportResult != other.usersImportResult) return false
         if (importPosts != other.importPosts) return false
+        if (usersImportResult != other.usersImportResult) return false
         if (postsImportResult != other.postsImportResult) return false
         if (totalReport != other.totalReport) return false
         if (errorText != other.errorText) return false
@@ -34,9 +44,9 @@ data class ManagementScreenState(
     override fun hashCode(): Int
     {
         var result = importUsers.hashCode()
-        result = 31 * result + (usersImportResult ?: 0)
         result = 31 * result + importPosts.hashCode()
-        result = 31 * result + (postsImportResult ?: 0)
+        result = 31 * result + (usersImportResult?.hashCode() ?: 0)
+        result = 31 * result + (postsImportResult?.hashCode() ?: 0)
         result = 31 * result + (totalReport?.hashCode() ?: 0)
         result = 31 * result + (errorText?.hashCode() ?: 0)
         result = 31 * result + (exportTotalReportBytes?.contentHashCode() ?: 0)

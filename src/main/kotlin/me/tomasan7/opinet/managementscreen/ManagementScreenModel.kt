@@ -73,6 +73,7 @@ class ManagementScreenModel(
 
         screenModelScope.launch {
             var importedUsersCount = 0
+            var failedUsersCount = 0
             for (path in files)
                 try
                 {
@@ -100,6 +101,7 @@ class ManagementScreenModel(
                         catch (e: UsernameAlreadyExistsException)
                         {
                             logger.info { "IMPORT: $username - $firstName $lastName was not imported, because it already exists" }
+                            failedUsersCount++
                         }
                         catch (e: Exception)
                         {
@@ -107,10 +109,11 @@ class ManagementScreenModel(
                                 changeUiState(errorText = Messages.networkError)
                             else if (e is CancellationException)
                                 throw e
+                            failedUsersCount++
                             logger.error { "IMPORT: $username - $firstName $lastName was not imported. (${e.message})" }
                         }
                     }
-                    changeUiState(usersImportResult = importedUsersCount)
+                    changeUiState(usersImportResult = ManagementScreenState.ImportResult(importedUsersCount, failedUsersCount))
                 }
                 catch (e: CancellationException)
                 {
@@ -209,6 +212,7 @@ class ManagementScreenModel(
 
         screenModelScope.launch {
             var importedPostsCount = 0
+            var failedPostsCount = 0
             for (path in paths)
                 try
                 {
@@ -265,7 +269,7 @@ class ManagementScreenModel(
                             logger.error { "IMPORT: Post titled '$title' was not imported. (${e.message})" }
                         }
                     }
-                    changeUiState(postsImportResult = importedPostsCount)
+                    changeUiState(postsImportResult = ManagementScreenState.ImportResult(importedPostsCount, failedPostsCount))
                 }
                 catch (e: Exception)
                 {
@@ -328,9 +332,9 @@ class ManagementScreenModel(
 
     private fun changeUiState(
         importUsers: Boolean = uiState.importUsers,
-        usersImportResult: Int? = uiState.usersImportResult,
+        usersImportResult: ManagementScreenState.ImportResult? = uiState.usersImportResult,
         importPosts: Boolean = uiState.importPosts,
-        postsImportResult: Int? = uiState.postsImportResult,
+        postsImportResult: ManagementScreenState.ImportResult? = uiState.postsImportResult,
         totalReport: TotalReport? = uiState.totalReport,
         errorText: String? = uiState.errorText,
         exportTotalReportBytes: ByteArray? = uiState.exportTotalReportBytes
