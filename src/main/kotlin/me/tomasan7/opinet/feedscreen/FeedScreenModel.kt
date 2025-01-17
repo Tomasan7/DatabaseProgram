@@ -68,6 +68,8 @@ class FeedScreenModel(
                     throw e
                 else
                     e.printStackTrace()
+
+                changeUiState(loading = false)
             }
         }
     }
