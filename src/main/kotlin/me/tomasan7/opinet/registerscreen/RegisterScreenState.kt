@@ -3,6 +3,7 @@ package me.tomasan7.opinet.registerscreen
 import me.tomasan7.opinet.user.Gender
 
 data class RegisterScreenState(
+    val maxLengths: MaxLengths,
     val username: String = "",
     val firstName: String = "",
     val lastName: String = "",
@@ -14,3 +15,11 @@ data class RegisterScreenState(
     val errorText: String = "",
     val registrationSuccessEvent: Boolean = false
 )
+{
+    data class MaxLengths(
+        val username: Int,
+        val firstName: Int,
+        val lastName: Int,
+        val password: Int
+    )
+}

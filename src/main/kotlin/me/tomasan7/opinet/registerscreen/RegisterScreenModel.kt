@@ -5,16 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
 import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.OpiNet
-import me.tomasan7.opinet.config.Config
-import me.tomasan7.opinet.user.Gender
-import me.tomasan7.opinet.user.UserDto
-import me.tomasan7.opinet.user.UserService
-import me.tomasan7.opinet.user.UsernameAlreadyExistsException
+import me.tomasan7.opinet.user.*
+import me.tomasan7.opinet.util.size
+import me.tomasan7.opinet.util.trimAndCut
 import java.nio.channels.UnresolvedAddressException
 
 private val logger = KotlinLogging.logger {}
@@ -26,18 +23,28 @@ class RegisterScreenModel(
     private val opiNet: OpiNet
 ) : ScreenModel
 {
-    var uiState by mutableStateOf(RegisterScreenState(username = username, password = password))
+    var uiState by mutableStateOf(RegisterScreenState(
+        // TODO: ScreenModel should not directly depend on Model implementation. Move this logic to abstract service.
+        maxLengths = RegisterScreenState.MaxLengths(
+            username = UserTable.username.size,
+            firstName = UserTable.firstName.size,
+            lastName = UserTable.lastName.size,
+            password = 50
+        ),
+        username = username,
+        password = password
+    ))
         private set
 
-    fun setUsername(username: String) = changeUiState(username = username.removeWhitespace(), errorText = "")
+    fun setUsername(username: String) = changeUiState(username = username.trimAndCut(uiState.maxLengths.username), errorText = "")
 
-    fun setFirstName(firstName: String) = changeUiState(firstName = firstName.removeWhitespace(), errorText = "")
+    fun setFirstName(firstName: String) = changeUiState(firstName = firstName.trimAndCut(uiState.maxLengths.firstName), errorText = "")
 
-    fun setLastName(lastName: String) = changeUiState(lastName = lastName.removeWhitespace(), errorText = "")
+    fun setLastName(lastName: String) = changeUiState(lastName = lastName.trimAndCut(uiState.maxLengths.lastName), errorText = "")
 
-    fun setPassword(password: String) = changeUiState(password = password.removeWhitespace(), errorText = "")
+    fun setPassword(password: String) = changeUiState(password = password.trimAndCut(uiState.maxLengths.password), errorText = "")
 
-    fun setConfirmingPassword(confirmingPassword: String) = changeUiState(confirmingPassword = confirmingPassword.removeWhitespace(), errorText = "")
+    fun setConfirmingPassword(confirmingPassword: String) = changeUiState(confirmingPassword = confirmingPassword.trimAndCut(uiState.maxLengths.password), errorText = "")
 
     fun changePasswordVisibility() = changeUiState(passwordShown = !uiState.passwordShown)
 

@@ -11,7 +11,10 @@ import kotlinx.coroutines.launch
 import me.tomasan7.opinet.Messages
 import me.tomasan7.opinet.OpiNet
 import me.tomasan7.opinet.user.UserService
+import me.tomasan7.opinet.user.UserTable
 import me.tomasan7.opinet.util.isNetworkError
+import me.tomasan7.opinet.util.size
+import me.tomasan7.opinet.util.trimAndCut
 import java.nio.file.Path
 
 private val logger = KotlinLogging.logger { }
@@ -22,7 +25,12 @@ class LoginScreenModel(
     private val sessionFile: Path
 ) : ScreenModel
 {
-    var uiState by mutableStateOf(LoginScreenState())
+    var uiState by mutableStateOf(LoginScreenState(
+        // TODO: ScreenModel should not directly depend on Model implementation. Move this logic to abstract service.
+        maxLengths = LoginScreenState.MaxLengths(
+            username = UserTable.username.size
+        )
+    ))
         private set
 
     private var loginJob: Job? = null
@@ -41,9 +49,9 @@ class LoginScreenModel(
         }
     }
 
-    fun setUsername(username: String) = changeUiState(username = username.removeWhitespace(), errorText = null)
+    fun setUsername(username: String) = changeUiState(username = username.trimAndCut(uiState.maxLengths.username), errorText = null)
 
-    fun setPassword(password: String) = changeUiState(password = password.removeWhitespace(), errorText = null)
+    fun setPassword(password: String) = changeUiState(password = password.trim(), errorText = null)
 
     fun changePasswordVisibility() = changeUiState(passwordShown = !uiState.passwordShown)
 
@@ -82,7 +90,10 @@ class LoginScreenModel(
                     if (uiState.rememberMe)
                         saveCredentials()
                     opiNet.currentUser = userService.getUserByUsername(username)!!
-                    uiState = LoginScreenState(loginSuccessEvent = true)
+                    uiState = LoginScreenState(
+                        maxLengths = uiState.maxLengths,
+                        loginSuccessEvent = true
+                    )
                 }
                 else
                 {
@@ -170,5 +181,4 @@ class LoginScreenModel(
             loginSuccessEvent = loginSuccessEvent
         )
     }
-    private fun String.removeWhitespace() = this.replace(Regex("\\s"), "")
 }

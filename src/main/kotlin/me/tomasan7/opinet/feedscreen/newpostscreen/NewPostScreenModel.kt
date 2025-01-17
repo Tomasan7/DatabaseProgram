@@ -17,8 +17,11 @@ import me.tomasan7.opinet.feedscreen.Post
 import me.tomasan7.opinet.feedscreen.User
 import me.tomasan7.opinet.post.PostDto
 import me.tomasan7.opinet.post.PostService
+import me.tomasan7.opinet.post.PostTable
 import me.tomasan7.opinet.user.UserService
 import me.tomasan7.opinet.util.isNetworkError
+import me.tomasan7.opinet.util.size
+import me.tomasan7.opinet.util.trimAndCut
 
 class NewPostScreenModel(
     private val postService: PostService,
@@ -27,6 +30,11 @@ class NewPostScreenModel(
 ) : ScreenModel
 {
     var uiState by mutableStateOf(NewPostScreenState(
+        // TODO: ScreenModel should not directly depend on Model implementation. Move this logic to abstract service.
+        maxLengths = NewPostScreenState.MaxLengths(
+            title = PostTable.title.size,
+            content = 1000
+        ),
         isEditing = editingPost != null,
         title = editingPost?.title ?: "",
         content = editingPost?.content ?: "",
@@ -34,9 +42,9 @@ class NewPostScreenModel(
     ))
         private set
 
-    fun setTitle(title: String) = changeUiState(title = title)
+    fun setTitle(title: String) = changeUiState(title = title.trimAndCut(uiState.maxLengths.title))
 
-    fun setContent(content: String) = changeUiState(content = content)
+    fun setContent(content: String) = changeUiState(content = content.trimAndCut(uiState.maxLengths.content))
 
     fun goBackToFeedEventConsumed() = changeUiState(goBackToFeedEvent = false)
 
