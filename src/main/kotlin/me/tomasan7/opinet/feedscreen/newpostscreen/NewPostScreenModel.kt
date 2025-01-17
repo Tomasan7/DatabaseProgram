@@ -118,7 +118,12 @@ class NewPostScreenModel(
             }
             catch (e: Exception)
             {
-                e.printStackTrace()
+                if (e.isNetworkError())
+                    changeUiState(errorText = Messages.networkError)
+                else if (e is CancellationException)
+                    throw e
+                else
+                    e.printStackTrace()
             }
         }
     }
